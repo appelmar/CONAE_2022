@@ -1,0 +1,352 @@
+[
+  {
+    "objectID": "introduction.html",
+    "href": "introduction.html",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "",
+    "text": "Show in new tab"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "",
+    "text": "This tutorial demonstrates how to access and process satellite image collections on cloud computing platforms using R and modern cloud-native tools including SpatioTemporal Asset Catalogs, cloud optimized GeoTIFFs, and on-demand data cubes. After a quick introduction and overview of corresponding R packages, practical examples on image compositing, time series analysis, and the extraction of training data for machine learning models will be presented in a live demonstration. The tutorial will end with a discussion of limitations and future developments in R. Materials and further information will be published at https://github.com/appelmar/CONAE_2022."
+  },
+  {
+    "objectID": "index.html#contents",
+    "href": "index.html#contents",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Contents",
+    "text": "Contents\n\nIntroduction\n\nThe cloud\nSatellite imagery on cloud platforms\nCloud-native technologies: STAC, COGs, data cubes\nR ecosystem for analyzing satellite imagery\nThe gdalcubes R package\n\nHands-on examples\n\nImage compositing\nTime series analysis\nExtraction\n\nDiscussion"
+  },
+  {
+    "objectID": "slides.html#motivation",
+    "href": "slides.html#motivation",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Motivation",
+    "text": "Motivation\n\nData availability (e.g. Sentinel-2) in the cloud\nMethod availability (e.g. in R, > 18k CRAN packages)\nWho wants to download > 100 GB from data portals?"
+  },
+  {
+    "objectID": "slides.html#tutorial-overview",
+    "href": "slides.html#tutorial-overview",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Tutorial overview",
+    "text": "Tutorial overview\nObjective: Show how you can analyze satellite image collections in the cloud with R\n\nIntroduction:\n\nCloud computing\nSatellite imagery in the cloud\nCloud-native geospatial echnologies\nR ecosystem\n\nLive examples\n\nCreating composite images\nComplex time series analysis\nExtraction from data cubes\n\nDiscussion\n\nAll materials are available on GitHub: https://github.com/appelmar/CONAE_2022."
+  },
+  {
+    "objectID": "slides.html#in-the-cloud",
+    "href": "slides.html#in-the-cloud",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "“… in the cloud”",
+    "text": "“… in the cloud”\nServices:\n\nGoogle Earth Engine (GEE)\nSentinel Hub\nopenEO backends\n…\n\nInfrastructure providers:\n\nAmazon web services (AWS)\nGoogle Cloud Platform\nMicrosoft Azure\nCopernicus DIASes\n…\n\nIn this tutorial, we will use a custom machine on AWS to analyze satellite image collections in the cloud."
+  },
+  {
+    "objectID": "slides.html#cloud-infrastructure-aws",
+    "href": "slides.html#cloud-infrastructure-aws",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Cloud infrastructure (AWS)",
+    "text": "Cloud infrastructure (AWS)\n\nLots of separate data centers with large clusters\n\n\n\nIn total: > 25 regions and > 80 availability zones\nBasic service to run (virtual) machines: EC2 (Amazon Elastic Compute Cloud)"
+  },
+  {
+    "objectID": "slides.html#running-a-machine-in-the-cloud-aws",
+    "href": "slides.html#running-a-machine-in-the-cloud-aws",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Running a machine in the cloud (AWS)",
+    "text": "Running a machine in the cloud (AWS)\n\nSelect a region and machine instance type, based on costs, hardware, and OS\nCreate a key pair for accessing the machine over SSH\nClick “Launch instance” and follow instructions\nConnect via SSH and install software (PROJ, GDAL, R, RStudioServer1, R packages, …)\n\nNotice that security considerations (e.g. by using IAM roles, multi-factor authorization) are NOT part of this tutorial.\nYou need to add a security rule to allow public / protected access to RStudioServer."
+  },
+  {
+    "objectID": "slides.html#aws-management-console",
+    "href": "slides.html#aws-management-console",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "AWS Management Console",
+    "text": "AWS Management Console"
+  },
+  {
+    "objectID": "slides.html#example-platforms-and-available-data",
+    "href": "slides.html#example-platforms-and-available-data",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Example platforms and available data",
+    "text": "Example platforms and available data\n\n\n\n\nProvider\nData\n\n\n\n\nAmazon web services (AWS)\nSentinel, Landsat, ERA 5, OSM, CMIP 6, and more, see here\n\n\nGoogle Cloud Platform\nLandsat, Sentinel, access to GEE data\n\n\nCopernicus DIASes\nSentinel + more (see here)\n\n\nMicrosoft Planetary Computer\nSentinel, Landsat, MODIS and more, see here"
+  },
+  {
+    "objectID": "slides.html#object-storage-s3",
+    "href": "slides.html#object-storage-s3",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Object Storage: S3",
+    "text": "Object Storage: S3\nEC2 machines have local storage (EBS) but big data archives use highly scalable object storage.\nS3 elements:\n\nBucket: container for objects that are stored in a specific AWS region\nObjects: Individual files and corresponding metadata within a bucket, identified by a unique key\nKey: Filenames / Path or similar; unique within a bucket\n\nPricing (storage, transfer, requests):\n\nBucket owner pays by default\nFor requester pays buckets, transfer and requests are paid by users"
+  },
+  {
+    "objectID": "slides.html#s3-examples",
+    "href": "slides.html#s3-examples",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "S3 examples",
+    "text": "S3 examples\n\nBuckets:\n\nhttps://registry.opendata.aws/sentinel-2\nhttps://registry.opendata.aws/usgs-landsat/\n\nObject:\n\nhttp://landsat-pds.s3.amazonaws.com/L8/003/017/LC80030172015001LGN00/LC80030172015001LGN00_B9.TIF"
+  },
+  {
+    "objectID": "slides.html#data-access",
+    "href": "slides.html#data-access",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Data access",
+    "text": "Data access\n\nBuckets are not a drive on your machine\nData access over HTTP requests (PUT, GET, DELETE, …)\n\n\nChallenges\n\nHow to find images by location, time, and other criteria?\nHow to efficiently read image data from S3 without copying images to our machine storage first?"
+  },
+  {
+    "objectID": "slides.html#stac-overview",
+    "href": "slides.html#stac-overview",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "STAC overview",
+    "text": "STAC overview\n\nStandardized JSON-based language for describing catalogs of spatiotemporal data (imagery, point clouds, SAR)\nExtensible (available extensions include EO, Data Cubes, Point Clouds, and more)\n1.0.0 release available since May 2021\nGrowing ecosystem"
+  },
+  {
+    "objectID": "slides.html#stac-specification",
+    "href": "slides.html#stac-specification",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "STAC specification",
+    "text": "STAC specification\n\n\nItems are inseparable objects of data (assets) and metadata (e.g. a single satellite image)\nCatalogs can be nested\nCollections extend catalogs and can be used to group items and their metadata (e.g. license)"
+  },
+  {
+    "objectID": "slides.html#stac-api",
+    "href": "slides.html#stac-api",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "STAC API",
+    "text": "STAC API\nStatic STAC catalogs\n\nTypically set of linked JSON files, starting with a catalog.json\nCatalog JSON contains links to collections, nested catalogs, or items\nItems contain assets (links to files) and metadata\nProblem: All items must be processed for searching\nExample: https://landsat.stac.cloud/?t=catalogs*\n\nSTAC API\n\nWeb-service for dynamic search of STAC items by area of interest, datetime, and other metadata\nCompliant with OGC API - Features standard\n\nSTAC Index\n\nA good starting point to find available STAC collections and API services: https://stacindex.org"
+  },
+  {
+    "objectID": "slides.html#cloud-optimized-geotiff-cog",
+    "href": "slides.html#cloud-optimized-geotiff-cog",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Cloud-optimized GeoTIFF (COG)",
+    "text": "Cloud-optimized GeoTIFF (COG)\nImage file formats must be cloud-friendly to reduce transfer times and costs associated with transfer and requests\n\n\n\nCOG = Normal tiled GeoTIFF files whose content follows a specific order of data and metadata (see full spec here)\nsupport compression\nsupport efficient HTTP range requests, i.e. partial reading of images (blocks, and overviews) over cloud storage\nmay contain overview images (image pyramids)\n\n\n\n\n\nGDAL can efficiently read and write COGs, and access object storage in the cloud with virtual file systems"
+  },
+  {
+    "objectID": "slides.html#satellite-image-collections",
+    "href": "slides.html#satellite-image-collections",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Satellite image collections",
+    "text": "Satellite image collections\nImages spatially overlap, have different coordinate reference systems, have different pixel sizes depending on spectral bands, yield irregular time series for larger areas"
+  },
+  {
+    "objectID": "slides.html#what-is-a-data-cube",
+    "href": "slides.html#what-is-a-data-cube",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "What is a data cube?",
+    "text": "What is a data cube?\nHere: A four-dimensional (space, time, variable / band) regular raster data cube\n\n\ncollect all observations in one object\n\\(b \\times t \\times y \\times x \\rightarrow\\) real value\nsingle CRS, cells have constant temporal duration, and spatial size"
+  },
+  {
+    "objectID": "slides.html#data-cube-creation-is-lossy",
+    "href": "slides.html#data-cube-creation-is-lossy",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Data Cube creation is lossy",
+    "text": "Data Cube creation is lossy\n Important: There is no single correct data cube!"
+  },
+  {
+    "objectID": "slides.html#r-packages",
+    "href": "slides.html#r-packages",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "R packages",
+    "text": "R packages\n\nraster / terrastarsgdalcubessitsothers\n\n\n\nGeneral packages for raster data analysis\nterra (Hijmans 2020) is a newer (faster) package that replaces raster (Hijmans 2019)\n\nSupport two- or three-dimensional rasters\nInclude lots of analysis tools\n\n\n\n\nFlexible package for spatiotemporal arrays / data cubes with arbitrary number of dimensions (Pebesma 2019)\nSupports raster and vector data cubes\n\n\n\n\n\n\n\n\n\n\n\n\n\nCreation and processing of four-dimensional (space, time, variable) data cubes from irregular image collections (Appel and Pebesma 2019)\nParallel chunk-wise processing\nUses GDAL to read and warp data\n\n\n\n\n\n\n\n\n\nGeneric package for satellite image time series analysis (Simoes et al. 2021)\nBuilds on top of previous packages\nIncludes sophisticated methods with a focus on time series classification\n\n\n\n\n\n\n\n\n\nrstac (Brazil Data Cube Team 2021): Query images from STAC-API services\nsp (Pebesma and Bivand 2005): replaced by sf and stars\nopeneo (Lahn 2021): Connect to and analyse data at openEO backends\n\n\n\n\n\nThis tutorial focuses on the packages rstac and gdalcubes."
+  },
+  {
+    "objectID": "slides.html#pros-and-cons-of-analysis-in-the-cloud",
+    "href": "slides.html#pros-and-cons-of-analysis-in-the-cloud",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Pros and cons of analysis in the cloud",
+    "text": "Pros and cons of analysis in the cloud\n\nThe presented workflow is based on the existence of STAC-API services and imagery as COGs!\n\n\n\nAdvantages\n\nAccess to huge data archives\nFlexibility: You can do whatever you can do on your local machine\nPowerful machines available\nOpen source software only\n\n\nDisadvantages\n\nNot free\nGEE and others can be easier to use (some are free)\nYour institution’s computing center might have more computing resources (for free)\nSetup and familiarization needed"
+  },
+  {
+    "objectID": "slides.html#summary",
+    "href": "slides.html#summary",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "Summary",
+    "text": "Summary\n\nCloud-computing platforms contain lots of open EO data\nCloud storage differs from local storage\nTechnology and tools:\n\nSTAC (and STAC API!) for efficient and standardized search of spatiotemporal EO data\nCOGs allow efficiently reading parts of imagery, potentially on lower resolution\nGDAL has everything for efficient data access on cloud storage\ngdalcubes makes the creation and processing of data cubes from satellite image collections in R easier"
+  },
+  {
+    "objectID": "slides.html#references",
+    "href": "slides.html#references",
+    "title": "Analyzing satellite image collections on public cloud platforms with R",
+    "section": "References",
+    "text": "References\n\n\nAppel, M., and Pebesma, E. (2019), “On-demand processing of data cubes from satellite image collections with the gdalcubes library,” Data, 4.\n\n\nBrazil Data Cube Team (2021), Rstac: Client library for SpatioTemporal asset catalog.\n\n\nHijmans, R. J. (2019), Raster: Geographic data analysis and modeling.\n\n\nHijmans, R. J. (2020), Terra: Spatial data analysis.\n\n\nLahn, F. (2021), Openeo: Client interface for ’openEO’ servers.\n\n\nPebesma, E. (2019), Stars: Spatiotemporal arrays, raster and vector data cubes.\n\n\nPebesma, E. J., and Bivand, R. S. (2005), “Classes and methods for spatial data in R,” R News, 5, 9–13.\n\n\nSimoes, R., Camara, G., Souza, F., Andrade, P., Santos, L., Ferreira, K., Queiroz, G., de Carvalho, A. Y., and Maus, V. (2021), Sits: Data analysis and machine learning using satellite image time series, Sao Jose dos Campos, Brazil: INPE - Brazilian National Institute for Space Research."
+  },
+  {
+    "objectID": "ex01.html",
+    "href": "ex01.html",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "",
+    "text": "Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region us-west-2 (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution."
+  },
+  {
+    "objectID": "ex01.html#introduction",
+    "href": "ex01.html#introduction",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "Introduction",
+    "text": "Introduction\nIn this example, we will create a cloud-free RGB composite image for the Córdoba Province, Argentina from a collection of Seninel-2 images. We will read imagery from the open Sentinel-2 COG catalog on AWS and use the available Earth Search STAC-API service to search for images intersecting with our region of interest."
+  },
+  {
+    "objectID": "ex01.html#define-area-of-interest",
+    "href": "ex01.html#define-area-of-interest",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "1. Define area of interest",
+    "text": "1. Define area of interest\nOur area of interest is provided as a GeoPackage file (data/cordoba_region.gpkg), containing a single polygon. We can use the sf (Pebesma 2018) package to read the file afterwards use the tmap (Tennekes 2018) package to create a simple map.\n\nlibrary(sf)\ncordoba_shape = read_sf(\"data/cordoba_region.gpkg\")\n\nlibrary(tmap)\ntm_shape(st_geometry(cordoba_shape)) +  \n  tm_polygons(alpha = 0.2, col = \"red\")"
+  },
+  {
+    "objectID": "ex01.html#query-available-images-from-stac",
+    "href": "ex01.html#query-available-images-from-stac",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "2. Query available images from STAC",
+    "text": "2. Query available images from STAC\nTo find images that intersect with our region and time of interest, we can extract the bounding box of our polygons with st_bbox(). The STAC request, however, expects WGS84 coordinates and we therefore transform (st_transform) the polygon and derive the bounding box again.\n\nbbox = st_bbox(cordoba_shape) \ncordoba_shape |>\n  st_transform(\"EPSG:4326\") |>\n  st_bbox() -> bbox_wgs84\nbbox_wgs84\n\n##      xmin      ymin      xmax      ymax \n## -65.77198 -35.00013 -61.77089 -29.50042\n\n\nNext, we can load the rstac package, connect to the Earth Search service and request images that intersect with the derived bounding box and the provided time range (March 2022).\n\nlibrary(rstac)\ns = stac(\"https://earth-search.aws.element84.com/v0\")\nitems = s |>\n  stac_search(collections = \"sentinel-s2-l2a-cogs\",\n              bbox = c(bbox_wgs84[\"xmin\"],bbox_wgs84[\"ymin\"],\n                       bbox_wgs84[\"xmax\"],bbox_wgs84[\"ymax\"]), \n              datetime = \"2022-03-01/2022-03-31\") |>\n  post_request() |> items_fetch(progress = FALSE)\nitems\n\n## ###STACItemCollection\n## - matched feature(s): 385\n## - features (385 item(s) / 0 not fetched):\n##   - S2B_19HGB_20220330_0_L2A\n##   - S2B_20HKG_20220330_0_L2A\n##   - S2B_20HLG_20220330_0_L2A\n##   - S2B_20HMG_20220330_0_L2A\n##   - S2B_20HNG_20220330_0_L2A\n##   - S2B_20HKH_20220330_0_L2A\n##   - S2B_20HLH_20220330_0_L2A\n##   - S2B_20HMH_20220330_0_L2A\n##   - S2B_20HNH_20220330_0_L2A\n##   - S2B_20HKJ_20220330_0_L2A\n##   - ... with 375 more feature(s).\n## - assets: \n## thumbnail, overview, info, metadata, visual, B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12, AOT, WVP, SCL\n## - other field(s): \n## type, stac_version, stac_extensions, context, numberMatched, numberReturned, features, links\n\n\nThe result contains 385 images as a list items$features. Each item (image) is in turn a list with properties, assets (links to S3 objects / files), and other metadata. Below, we show some example fields of a single item.\n\nitems$features[[20]]$properties\nitems$features[[20]]$assets$B08\n\n## $datetime\n## [1] \"2022-03-30T14:21:21Z\"\n## \n## $platform\n## [1] \"sentinel-2b\"\n## \n## $constellation\n## [1] \"sentinel-2\"\n## \n## $instruments\n## [1] \"msi\"\n## \n## $gsd\n## [1] 10\n## \n## $`view:off_nadir`\n## [1] 0\n## \n## $`proj:epsg`\n## [1] 32720\n## \n## $`sentinel:utm_zone`\n## [1] 20\n## \n## $`sentinel:latitude_band`\n## [1] \"J\"\n## \n## $`sentinel:grid_square`\n## [1] \"ML\"\n## \n## $`sentinel:sequence`\n## [1] \"0\"\n## \n## $`sentinel:product_id`\n## [1] \"S2B_MSIL2A_20220330T141039_N0400_R110_T20JML_20220330T192736\"\n## \n## $`sentinel:data_coverage`\n## [1] 100\n## \n## $`eo:cloud_cover`\n## [1] 73.88\n## \n## $`sentinel:valid_cloud_cover`\n## [1] TRUE\n## \n## $`sentinel:processing_baseline`\n## [1] \"04.00\"\n## \n## $`sentinel:boa_offset_applied`\n## [1] TRUE\n## \n## $created\n## [1] \"2022-03-30T23:42:13.704Z\"\n## \n## $updated\n## [1] \"2022-03-30T23:42:13.704Z\"\n## \n## $title\n## [1] \"Band 8 (nir)\"\n## \n## $type\n## [1] \"image/tiff; application=geotiff; profile=cloud-optimized\"\n## \n## $roles\n## [1] \"data\"\n## \n## $gsd\n## [1] 10\n## \n## $`eo:bands`\n## $`eo:bands`[[1]]\n## $`eo:bands`[[1]]$name\n## [1] \"B08\"\n## \n## $`eo:bands`[[1]]$common_name\n## [1] \"nir\"\n## \n## $`eo:bands`[[1]]$center_wavelength\n## [1] 0.8351\n## \n## $`eo:bands`[[1]]$full_width_half_max\n## [1] 0.145\n## \n## \n## \n## $href\n## [1] \"https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/20/J/ML/2022/3/S2B_20JML_20220330_0_L2A/B08.tif\"\n## \n## $`proj:shape`\n## [1] 10980 10980\n## \n## $`proj:transform`\n## [1]      10       0  399960       0     -10 6600040       0       0       1"
+  },
+  {
+    "objectID": "ex01.html#create-a-gdalcubes-image-collection-from-stac-result",
+    "href": "ex01.html#create-a-gdalcubes-image-collection-from-stac-result",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "3. Create a gdalcubes image collection from STAC result",
+    "text": "3. Create a gdalcubes image collection from STAC result\nTo create a data cube from the images contained in the STAC response, we can now use the gdalcubes package. First, we need to convert the STAC item list to a gdalcubes image collection object, which indexes available images (in a single-file database). Image collection objects do not contain any pixel data and hence are very small. Below, we use the stac_image_collection() function that receives a list of STAC items as input and returns a gdalcubes image collection as output. We explicitly provide names of assets to make sure that the “SCL” band is included and at the same time apply a filter function on images to ignore cloudy images.\n\nlibrary(gdalcubes)\nassets = c(\"B01\",\"B02\",\"B03\",\"B04\",\"B05\",\"B06\", \"B07\",\"B08\",\"B8A\",\"B09\",\"B11\",\"SCL\")\ns2_collection = stac_image_collection(items$features, asset_names = assets, \n                                      property_filter = function(x) {x[[\"eo:cloud_cover\"]] < 20})\ns2_collection\n\n## Image collection object, referencing 227 images with 12 bands\n## Images:\n##                       name      left       top    bottom     right\n## 1 S2B_19HGB_20220330_0_L2A -65.87358 -34.51337 -35.29082 -65.59543\n## 2 S2B_20HKG_20220330_0_L2A -65.87558 -34.31426 -35.31315 -65.06754\n## 3 S2B_20HLG_20220330_0_L2A -65.19991 -34.32183 -35.32718 -63.98063\n## 4 S2B_20HMG_20220330_0_L2A -64.10066 -34.33630 -35.33121 -62.89262\n## 5 S2B_20HNG_20220330_0_L2A -63.00021 -34.33886 -35.33035 -62.25445\n## 6 S2B_20HKH_20220330_0_L2A -65.59248 -33.41797 -34.41180 -65.04591\n##              datetime        srs\n## 1 2022-03-30T14:22:30 EPSG:32719\n## 2 2022-03-30T14:22:25 EPSG:32720\n## 3 2022-03-30T14:22:22 EPSG:32720\n## 4 2022-03-30T14:22:19 EPSG:32720\n## 5 2022-03-30T14:22:15 EPSG:32720\n## 6 2022-03-30T14:22:11 EPSG:32720\n## [ omitted 221 images ] \n## \n## Bands:\n##    name offset scale unit nodata image_count\n## 1   B01      0     1                     227\n## 2   B02      0     1                     227\n## 3   B03      0     1                     227\n## 4   B04      0     1                     227\n## 5   B05      0     1                     227\n## 6   B06      0     1                     227\n## 7   B07      0     1                     227\n## 8   B08      0     1                     227\n## 9   B09      0     1                     227\n## 10  B11      0     1                     227\n## 11  B8A      0     1                     227\n## 12  SCL      0     1                     227"
+  },
+  {
+    "objectID": "ex01.html#create-a-virtual-data-cube",
+    "href": "ex01.html#create-a-virtual-data-cube",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "4. Create a (virtual) data cube",
+    "text": "4. Create a (virtual) data cube\nWe can now define our target data cube, including the coordinate reference system, the pixel sizes, the spatiotemporal extent as well as methods used for spatial resampling and temporal aggregation.\n\nv= cube_view(srs=\"EPSG:3857\",  dx=500, dy=500, dt=\"P1D\", \n             aggregation=\"median\", resampling = \"average\",\n             extent=list(t0 = \"2022-03-01\", t1 = \"2022-03-31\",\n                         left=bbox[\"xmin\"], right=bbox[\"xmax\"],\n                         top=bbox[\"ymax\"], bottom=bbox[\"ymin\"]))\nv\n\n## A data cube view object\n## \n## Dimensions:\n##              low           high count pixel_size\n## t     2022-03-01     2022-03-31    31        P1D\n## y -4163946.78375 -3439446.78375  1449        500\n## x -7321754.07345 -6876254.07345   891        500\n## \n## SRS: \"EPSG:3857\"\n## Temporal aggregation method: \"median\"\n## Spatial resampling method: \"average\"\n\n\nTo ignore cloud and cloud shadow pixels during construction of the data cube, we define a mask using the SCL band and afterwards combine the collection, the data cube view, and the mask to build a data cube.\n\nS2.mask = image_mask(\"SCL\", values = c(3,8,9))\nS2_cube = raster_cube(s2_collection, v, S2.mask)\nS2_cube\n\n## A data cube proxy object\n## \n## Dimensions:\n##              low           high count pixel_size chunk_size\n## t     2022-03-01     2022-03-31    31        P1D          1\n## y -4163946.78375 -3439446.78375  1449        500        192\n## x -7321754.07345 -6876254.07345   891        500        192\n## \n## Bands:\n##    name offset scale nodata unit\n## 1   B01      0     1    NaN     \n## 2   B02      0     1    NaN     \n## 3   B03      0     1    NaN     \n## 4   B04      0     1    NaN     \n## 5   B05      0     1    NaN     \n## 6   B06      0     1    NaN     \n## 7   B07      0     1    NaN     \n## 8   B08      0     1    NaN     \n## 9   B09      0     1    NaN     \n## 10  B11      0     1    NaN     \n## 11  B8A      0     1    NaN     \n## 12  SCL      0     1    NaN\n\n\nNotice that the result is a virtual data cube (or a proxy object) that still does not contain any pixel data and consumes any processing / memory resources. Instead, the object simply knows how to create the cube when needed (e.g. when you call plot(), write_tif(), write_ncdf(), or similar). This concept is sometimes referred to as lazy evaluation."
+  },
+  {
+    "objectID": "ex01.html#process-data-cube-and-plot-result",
+    "href": "ex01.html#process-data-cube-and-plot-result",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "5. Process data cube and plot result",
+    "text": "5. Process data cube and plot result\nGiven the data cube, we can apply built-in data cube operations. Notice that calling these operations still will not start any expensive computations / data reading and the returned object is still a virtual data cube. To derive a simple cloud-free mosaic image of our study region, we use the select_bands() function to filter by spectral bands, the reduce_time() function to calculate median values for all pixel time series and all three bands, and the filter_geom() function to cut our polygon from the result. Calling plot() will eventually start needed computations and finally plot a composite image.\n\nS2_cube |>\n  select_bands(c(\"B02\", \"B03\", \"B04\")) |>\n  reduce_time(\"median(B02)\",\"median(B03)\",\"median(B04)\") |>\n  filter_geom(cordoba_shape$geom) |>\n  plot(rgb = 3:1, zlim = c(0, 1800))\n\n\n\n\nNotice that computations are executed in parallel. Calling gdalcubes_options(parallel = 8) can be used to e.g. use up to 8 parallel worker processes.\nIn addition to the operations used above, the gdalcubes package provides the following operations on data cubes.\n\n\nTable 1: Built-in data cube operations\n\n\n\n\n\n\nOperation\nDescription\n\n\n\n\naggregate_space\nReduce spatial resolution of a cube by applying a spatial aggregation function.\n\n\naggregate_time\nAggregate and/or regularize time series.\n\n\napply_pixel\nApply an arithmetic expression to all data cube pixels.\n\n\ncrop\nExtract a rectangular spatial / temporal / spatiotemporal window.\n\n\nfill_time\nFill missing values of a data cube by simple time series interpolation.\n\n\nfilter_geom\nFilter pixels by a a spatial polygon.\n\n\nfilter_pixel\nFilter pixels by a logical expressions on band values.\n\n\njoin_bands\nCombine bands of two identically shaped data cubes.\n\n\nreduce_space\nApply a reducer function to all spatial slices of a data cube.\n\n\nreduce_time\nApply a reducer function to all pixel time series.\n\n\nselect_bands\nSelect specific bands of a data cube.\n\n\nselect_time\nSelect irregular time slices of a data cube.\n\n\nslice_space\nSelect a single time series of a data cube.\n\n\nslice_time\nSelect a single time slice of a data cube.\n\n\nwindow_time\nApply a moving window aggregate or convolution kernel to all pixel time series."
+  },
+  {
+    "objectID": "ex01.html#greenest-pixel-composite-with-a-user-defined-function",
+    "href": "ex01.html#greenest-pixel-composite-with-a-user-defined-function",
+    "title": "Example 1: Cloud-free composite images",
+    "section": "6. Greenest pixel composite with a user-defined function",
+    "text": "6. Greenest pixel composite with a user-defined function\nSome operations accept user-defined R functions as arguments. For example, we can write our own reducer function that computes per pixel NDVI values, and returns RGB values at the day with maximum NDVI (greenest pixel) as in the following code example.\n\nraster_cube(s2_collection, v, S2.mask) |>\n  select_bands(c(\"B02\", \"B03\", \"B04\", \"B08\")) |>\n  reduce_time(names=c(\"blue\", \"green\", \"red\"), FUN = function(x) {\n    ndvi = (x[\"B08\", ] - x[\"B04\", ]) / (x[\"B08\", ] + x[\"B04\", ])\n    if (all(is.na(ndvi))) {\n      return(c(NA,NA,NA))\n    }\n    i = which.max(ndvi)\n    return(x[c(\"B02\", \"B03\", \"B04\"), i])\n  }) |>\n  filter_geom(cordoba_shape$geom) |>\n  plot(rgb = 3:1, zlim = c(0, 1800))"
+  },
+  {
+    "objectID": "ex03.html",
+    "href": "ex03.html",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "",
+    "text": "Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region us-west-2 (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution."
+  },
+  {
+    "objectID": "ex03.html#introduction",
+    "href": "ex03.html#introduction",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "Introduction",
+    "text": "Introduction\nMachine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from provided labeled points. Therefore, we will use primary data from the European Land Use and Coverage Area frame Survey (LUCAS) containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see here). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples."
+  },
+  {
+    "objectID": "ex03.html#load-and-preprocess-samples",
+    "href": "ex03.html#load-and-preprocess-samples",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "1. Load and preprocess samples",
+    "text": "1. Load and preprocess samples\nFirst, we need to convert our CSV table into a spatially referenced sf object. After reading the CSV files, we remove rows without valid coordinates and create an sf object using st_as_sf() by specifying the names of latitude and longitude columns.\n\nlibrary(sf)\nx = read.csv(\"data/DE_2018_20200213.CSV\")\nx = x[-which(is.na(x$TH_LAT) | is.na(x$TH_LONG)),]\nx = st_as_sf(x, coords = c(\"TH_LONG\", \"TH_LAT\"), crs = \"EPSG:4326\")\nx$t = as.Date(x$SURVEY_DATE, format = \"%d/%m/%y\") \nhead(x[,c(\"LC1\",\"t\")])\nnrow(x)\n\n## Simple feature collection with 6 features and 2 fields\n## Geometry type: POINT\n## Dimension:     XY\n## Bounding box:  xmin: 10.25433 ymin: 47.97129 xmax: 10.28515 ymax: 53.32969\n## Geodetic CRS:  WGS 84\n##   LC1          t                  geometry\n## 1 B16 2018-06-20 POINT (10.28515 53.32969)\n## 2 B16 2018-08-03 POINT (10.25433 47.97129)\n## 3 C21 2018-06-26 POINT (10.25469 48.04328)\n## 4 B16 2018-07-06 POINT (10.26024 49.12281)\n## 5 A22 2018-09-03  POINT (10.2652 50.04006)\n## 6 B32 2018-09-02  POINT (10.2659 50.16593)\n## [1] 26777\n\n\nThe LC1 column contains codes for primary land cover types of the samples. We are interested in common wheat, which is decoded as B11.\nWe now use the dplyr package to sample 100 corresponding observations and afterwards plot the result.\n\nx[startsWith(x$LC1, c(\"B11\")), c(\"LC1\",\"t\")] |>\n  dplyr::slice_sample(n = 100) -> training_sites\n\nplot(training_sites[,\"LC1\"])\n\n\n\n\nAs expected from random sampling, points are scattared all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values."
+  },
+  {
+    "objectID": "ex03.html#query-related-images-from-stac",
+    "href": "ex03.html#query-related-images-from-stac",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "2. Query related images from STAC",
+    "text": "2. Query related images from STAC\nAs in the previous examples, we calculate the bounding box, perform a STAC query to find relevant images and afterwards create a gdalcubes image collection object. Since our point samples cover a large area and time range, this may include quite a lot of images and the STAC request might take some time. To avoid repeating these steps. we simply store the resulting image collection as a file and reload it when needed.\n\nbbox = st_bbox(training_sites) \nbbox\n\nlibrary(rstac)\ns = stac(\"https://earth-search.aws.element84.com/v0\")\nitems = s |>\n  stac_search(collections = \"sentinel-s2-l2a-cogs\",\n              bbox = c(bbox[\"xmin\"],bbox[\"ymin\"],\n                       bbox[\"xmax\"],bbox[\"ymax\"]), \n              datetime = \"2018-04-01/2018-12-31\") |>\n  post_request() |> items_fetch(progress = FALSE)\nitems\n\n##      xmin      ymin      xmax      ymax \n##  6.425526 47.998246 14.595403 54.546094 \n## ###STACItemCollection\n## - matched feature(s): 8303\n## - features (8303 item(s) / 0 not fetched):\n##   - S2A_31UGP_20181231_0_L2A\n##   - S2A_32ULU_20181231_0_L2A\n##   - S2A_32UMU_20181231_0_L2A\n##   - S2A_32UNU_20181231_0_L2A\n##   - S2A_31UGQ_20181231_0_L2A\n##   - S2A_32ULV_20181231_0_L2A\n##   - S2A_32UMV_20181231_0_L2A\n##   - S2A_32UNV_20181231_0_L2A\n##   - S2A_31UGR_20181231_0_L2A\n##   - S2A_32ULA_20181231_0_L2A\n##   - ... with 8293 more feature(s).\n## - assets: \n## overview, thumbnail, metadata, B11, B01, B12, B02, B03, B04, AOT, B05, B06, B07, B08, B8A, B09, WVP, visual, SCL, info\n## - other field(s): \n## type, stac_version, stac_extensions, context, numberMatched, numberReturned, features, links"
+  },
+  {
+    "objectID": "ex03.html#convert-stac-results-to-a-gdalcubes-image-collection",
+    "href": "ex03.html#convert-stac-results-to-a-gdalcubes-image-collection",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "3. Convert STAC results to a gdalcubes image collection",
+    "text": "3. Convert STAC results to a gdalcubes image collection\n\nlibrary(gdalcubes)\n\n# REMOVE DUPLICATE STAC ITEMS!\nids = unlist(lapply(items$features, function(x) {x$id}))\nitems$features_unique = items$features[-which((duplicated(ids)))]\n\ns2_collection = \n  stac_image_collection(items$features_unique, asset_names = c(\"B02\",\"B03\",\"B04\",\"B08\",\"SCL\"),\n                        property_filter = function(x) {x[[\"eo:cloud_cover\"]] < 10},\n                        out_file = \"S2_de_2018.db\")"
+  },
+  {
+    "objectID": "ex03.html#create-an-ndvi-data-cube",
+    "href": "ex03.html#create-an-ndvi-data-cube",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "4. Create an NDVI data cube",
+    "text": "4. Create an NDVI data cube\nNow, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively. We also calculate the NDVI, which we would like to use as “explanatory” variable.\n\ns2_collection = image_collection(\"S2_de_2018.db\")\ns2_collection\nv = cube_view(extent=s2_collection, dt=\"P5D\", dx=10, dy=10, srs=\"EPSG:3857\", \n              aggregation = \"median\", resampling = \"nearest\")\n\nS2.mask = image_mask(\"SCL\", values = c(3,8,9))\nraster_cube(s2_collection, v, mask = S2.mask) |> \n  select_bands(c(\"B04\",\"B08\")) |>\n  apply_pixel(\"(B08-B04)/(B08+B04)\", \"NDVI\") -> s2_cube\ns2_cube\n\n## Image collection object, referencing 2179 images with 5 bands\n## Images:\n##                       name      left      top   bottom     right\n## 1 S2A_32UPV_20181228_0_L2A 10.357925 49.64443 48.62983 11.904558\n## 2 S2B_32UPV_20181226_0_L2A 10.376458 49.64443 49.33412 10.524597\n## 3 S2A_31UGT_20181224_0_L2A  5.870231 52.31403 51.27893  7.539964\n## 4 S2A_32ULC_20181224_0_L2A  6.065813 52.34304 51.32806  7.704564\n## 5 S2A_31UGU_20181224_0_L2A  5.927835 53.21198 52.17549  7.634167\n## 6 S2A_32ULD_20181224_0_L2A  6.004777 53.24195 52.22622  7.678529\n##              datetime        srs\n## 1 2018-12-28T10:27:05 EPSG:32632\n## 2 2018-12-26T10:36:59 EPSG:32632\n## 3 2018-12-24T10:46:29 EPSG:32631\n## 4 2018-12-24T10:46:28 EPSG:32632\n## 5 2018-12-24T10:46:14 EPSG:32631\n## 6 2018-12-24T10:46:13 EPSG:32632\n## [ omitted 2173 images ] \n## \n## Bands:\n##   name offset scale unit nodata image_count\n## 1  B02      0     1                    2179\n## 2  B03      0     1                    2179\n## 3  B04      0     1                    2179\n## 4  B08      0     1                    2179\n## 5  SCL      0     1                    2179\n## \n## A data cube proxy object\n## \n## Dimensions:\n##                low             high  count pixel_size chunk_size\n## t       2018-04-01       2018-12-31     55        P5D          1\n## y 6055573.54251774 7370993.54251774 131542         10       1024\n## x 630847.596478828 1686797.59647883 105595         10       1024\n## \n## Bands:\n##   name offset scale nodata unit\n## 1 NDVI      0     1    NaN"
+  },
+  {
+    "objectID": "ex03.html#extract-ndvi-values-from-point-samples",
+    "href": "ex03.html#extract-ndvi-values-from-point-samples",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "5. Extract NDVI values from point samples",
+    "text": "5. Extract NDVI values from point samples\nNow, we can extract values from the cube using the extract_geom() function. Given a data cube and any simple feature geometries as an sf object, the function can be used as a general method to extract data cube pixel values at irregular locations. extract_geom() returns a data.frame with columns for feature identifiers (FIDs, often row numbers of the sf object), time, and bands / variables of the data cube. Each row represents the data cube values of one pixel relating to the feature given by the FID column. For anything other than simple point geometries (e.g. POLYGON, LINESTRING, MULTIPOINT, and similar), the result may contain multiple rows per feature. In these cases, it is possible to apply an aggregation function to compute mean, median or similar summary statistics over features.\n\nndvi_obs <- extract_geom(s2_cube, training_sites, time_column = \"t\")\nnrow(ndvi_obs)\nndvi_obs\n\n## [1] 44\n##    FID       time      NDVI\n## 1   59 2018-05-06 0.8467726\n## 2   72 2018-05-06 0.8583203\n## 3   19 2018-05-21 0.9159632\n## 4   66 2018-07-05 0.3578125\n## 5   33 2018-06-30 0.4732844\n## 6   14 2018-06-30 0.3149823\n## 7   44 2018-06-25 0.6904455\n## 8   40 2018-07-25 0.3533923\n## 9   52 2018-06-25 0.7224096\n## 10  69 2018-05-16 0.9037717\n## 11   4 2018-05-26 0.7437950\n## 12  71 2018-06-05 0.5119975\n## 13   2 2018-06-30 0.2705607\n## 14  31 2018-07-15 0.2339880\n## 15  36 2018-07-25 0.2323612\n## 16  49 2018-07-05 0.3464223\n## 17  70 2018-06-15 0.7854867\n## 18  64 2018-07-10 0.3282554\n## 19  83 2018-05-06 0.9140502\n## 20  91 2018-06-25 0.6438177\n## 21  93 2018-07-10 0.2995042\n## 22  30 2018-07-25 0.2615385\n## 23  20 2018-07-30 0.1760168\n## 24  53 2018-07-15 0.1914191\n## 25  54 2018-07-30 0.2090067\n## 26  98 2018-07-25 0.1659836\n## 27  26 2018-08-19 0.1588716\n## 28  84 2018-06-05 0.8010850\n## 29  82 2018-06-05 0.8242248\n## 30  73 2018-08-04 0.1529412\n## 31  34 2018-07-10 0.1878926\n## 32  80 2018-07-30 0.1908810\n## 33  75 2018-07-25 0.2620659\n## 34   9 2018-07-15 0.1901082\n## 35  46 2018-07-05 0.3886693\n## 36  94 2018-07-25 0.1720852\n## 37  67 2018-07-25 0.1996211\n## 38  51 2018-09-18 0.3810790\n## 39 100 2018-08-09 0.1854529\n## 40  62 2018-07-30 0.4008380\n## 41   6 2018-07-30 0.1621462\n## 42  58 2018-07-15 0.2435374\n## 43  41 2018-07-25 0.2378402\n## 44  13 2018-07-30 0.1618335\n\n\nextract_geom() drops any pixels with missing values only. Hence, if a feature is outside the extent of the data cube, or all pixels of a feature are NA due to clouds or unavailability of images, these pixels will not be included in the result. In contrast, if the input features contain overlapping geometries, pixels may be included several times (with different values in the FID column)."
+  },
+  {
+    "objectID": "ex03.html#combine-results-with-geometries",
+    "href": "ex03.html#combine-results-with-geometries",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "6. Combine results with geometries",
+    "text": "6. Combine results with geometries\nTo combine the extracted data cube values with the original sf objects including the geometries, the merge() function can be used. merge() performs table join operations on common columns (e.g. IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e. rows with FIDs that only exist in one table will be dropped. Alternatively, we can set all.x=TRUE to make sure that our result contains all features from the original dataset (left outer join).\n\nsf = training_sites\nsf$FID = rownames(sf)\ndf = merge(sf, ndvi_obs, by = \"FID\")\ndf\nplot(df[,\"NDVI\"])\n\n\n\n\n## Simple feature collection with 44 features and 5 fields\n## Geometry type: POINT\n## Dimension:     XY\n## Bounding box:  xmin: 6.425526 ymin: 48.00758 xmax: 14.19051 ymax: 54.54609\n## Geodetic CRS:  WGS 84\n## First 10 features:\n##    FID LC1          t       time      NDVI                  geometry\n## 1  100 B11 2018-08-09 2018-08-09 0.1854529 POINT (11.91479 48.69287)\n## 2   13 B11 2018-08-01 2018-07-30 0.1618335 POINT (12.25988 53.20107)\n## 3   14 B11 2018-07-04 2018-06-30 0.3149823 POINT (14.19051 52.71753)\n## 4   19 B11 2018-05-25 2018-05-21 0.9159632 POINT (10.18764 51.60439)\n## 5    2 B11 2018-07-04 2018-06-30 0.2705607 POINT (13.50462 53.40524)\n## 6   20 B11 2018-08-01 2018-07-30 0.1760168  POINT (8.475911 50.1201)\n## 7   26 B11 2018-08-19 2018-08-19 0.1588716 POINT (10.90452 52.80541)\n## 8   30 B11 2018-07-29 2018-07-25 0.2615385  POINT (10.0134 48.00758)\n## 9   31 B11 2018-07-19 2018-07-15 0.2339880 POINT (10.74198 51.96172)\n## 10  33 B11 2018-07-01 2018-06-30 0.4732844 POINT (9.798789 48.07938)"
+  },
+  {
+    "objectID": "ex03.html#extract-complete-time-series",
+    "href": "ex03.html#extract-complete-time-series",
+    "title": "Example 3: Extracting training data for machine-learning applications",
+    "section": "7. Extract complete time series",
+    "text": "7. Extract complete time series\nIf we skip the time_column argument in extract_geom() we can extract complete time series at irregular points. Below, we use the same locations but extract complete time series, which we plot using the ggplot2 package.\n\nwheat_timeseries <- extract_geom(s2_cube, training_sites)\nnrow(wheat_timeseries)\n\nlibrary(ggplot2)\n\nwheat_timeseries |>\n  ggplot( aes(x = as.Date(time), y = NDVI, color = factor(FID))) +\n  geom_line(size = 0.5) + \n  ylim(c(0,1)) + xlim(c(as.Date(\"2018-05-01\"),as.Date(\"2018-09-30\"))) + \n  xlab(\"Time\") + ylab(\"NDVI\") \n\n\n\n\n## [1] 1901"
+  },
+  {
+    "objectID": "ex02.html",
+    "href": "ex02.html",
+    "title": "Example 2: Time series analysis",
+    "section": "",
+    "text": "Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region us-west-2 (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution."
+  },
+  {
+    "objectID": "ex02.html#introduction",
+    "href": "ex02.html#introduction",
+    "title": "Example 2: Time series analysis",
+    "section": "Introduction",
+    "text": "Introduction\nIn this example, we use MODIS vegetation index data (MOD13A1) on AWS to apply more complex time series analysis (trend estimation and change detection). The steps performed are very similar to the first example. However, the data is provided as in a requester pays bucket, i.e., we need to pay for data requests and transfer. To do so, we need to set up an AWS IAM-user with S3reader rights and some configuration options before we can read images:\n\ngdalcubes_set_gdal_config(\"AWS_ACCESS_KEY_ID\", \"xxxxxxxxx\")\ngdalcubes_set_gdal_config(\"AWS_SECRET_ACCESS_KEY\", \"xxxxxxxxxx\")\ngdalcubes_set_gdal_config(\"AWS_REQUEST_PAYER\", \"requester\")"
+  },
+  {
+    "objectID": "ex02.html#define-area-of-interest",
+    "href": "ex02.html#define-area-of-interest",
+    "title": "Example 2: Time series analysis",
+    "section": "1. Define area of interest",
+    "text": "1. Define area of interest\nOur study area is the whole country of Germany, provided as GeoPackage file (data/de.gpkg), which we can read using the sf package.\n\nlibrary(sf)\nde_shape = read_sf(\"data/de.gpkg\")"
+  },
+  {
+    "objectID": "ex02.html#query-available-images-from-stac",
+    "href": "ex02.html#query-available-images-from-stac",
+    "title": "Example 2: Time series analysis",
+    "section": "2. Query available images from STAC",
+    "text": "2. Query available images from STAC\nWe calculate the bounding box of the original as well as of the transformed polygon and request images from the corresponding STAC service, using the “mod13a1” collection.\n\nbbox = st_bbox(de_shape) \nde_shape |>\n  st_transform(\"EPSG:4326\") |>\n  st_bbox() -> bbox_wgs84\nbbox_wgs84\n\nlibrary(rstac)\ns = stac(\"https://eod-catalog-svc-prod.astraea.earth\")\nitems = s |>\n  stac_search(collections = \"mod13a1\",\n              bbox = c(bbox_wgs84[\"xmin\"],bbox_wgs84[\"ymin\"],\n                       bbox_wgs84[\"xmax\"],bbox_wgs84[\"ymax\"]),\n              datetime = \"2010-01-01T00:00:00Z/2019-12-31T00:00:00Z\") |>\n  post_request() |> items_fetch(progress = FALSE)\nitems\n\n##      xmin      ymin      xmax      ymax \n##  5.865999 47.270362 15.041531 55.057060 \n## ###STACItemCollection\n## - matched feature(s): 707\n## - features (707 item(s) / 0 not fetched):\n##   - MOD13A1.A2015353.h18v04.006.2016007181814\n##   - MOD13A1.A2015353.h19v04.006.2016007181809\n##   - MOD13A1.A2018353.h19v04.006.2019009043915\n##   - MOD13A1.A2018353.h18v03.006.2019009043612\n##   - MOD13A1.A2010353.h18v03.006.2018226093446\n##   - MOD13A1.A2013353.h18v04.006.2018226105916\n##   - MOD13A1.A2014353.h18v03.006.2018226110056\n##   - MOD13A1.A2011353.h19v04.006.2015230023909\n##   - MOD13A1.A2011353.h18v04.006.2018226092723\n##   - MOD13A1.A2012353.h18v03.006.2018226105744\n##   - ... with 697 more feature(s).\n## - assets: \n## BR, CDOY, EVI, MIRR, NDVI, NIRR, PR, RAA, RR, SZA, VIQ, VZA, eod_thumbnail\n## - other field(s): \n## context, features, links, search:metadata, stac_extensions, stac_version, type"
+  },
+  {
+    "objectID": "ex02.html#create-a-gdalcubes-image-collection-from-stac-result",
+    "href": "ex02.html#create-a-gdalcubes-image-collection-from-stac-result",
+    "title": "Example 2: Time series analysis",
+    "section": "3. Create a gdalcubes image collection from STAC result",
+    "text": "3. Create a gdalcubes image collection from STAC result\nWe simply convert the STAC response to an image collection using the stac_image_collection() function.\n\nlibrary(gdalcubes)\ncol = stac_image_collection(items$features, asset_names = c(\"NDVI\",\"VIQ\"))\ncol\n\n## Image collection object, referencing 707 images with 2 bands\n## Images:\n##                                        name     left top   bottom    right\n## 1 MOD13A1.A2015353.h18v04.006.2016007181814  0.00000  50 40.00444 15.55033\n## 2 MOD13A1.A2015353.h19v04.006.2016007181809 13.05492  50 40.00444 31.10757\n## 3 MOD13A1.A2018353.h19v04.006.2019009043915 13.05492  50 40.00444 31.10757\n## 4 MOD13A1.A2018353.h18v03.006.2019009043612  0.00000  60 50.00444 19.99112\n## 5 MOD13A1.A2010353.h18v03.006.2018226093446  0.00000  60 50.00444 19.99112\n## 6 MOD13A1.A2013353.h18v04.006.2018226105916  0.00000  50 40.00444 15.55033\n##              datetime srs\n## 1 2015-12-19T00:00:00    \n## 2 2015-12-19T00:00:00    \n## 3 2018-12-19T00:00:00    \n## 4 2018-12-19T00:00:00    \n## 5 2010-12-19T00:00:00    \n## 6 2013-12-19T00:00:00    \n## [ omitted 701 images ] \n## \n## Bands:\n##   name offset scale unit nodata image_count\n## 1 NDVI      0     1                     707\n## 2  VIQ      0     1                     707"
+  },
+  {
+    "objectID": "ex02.html#create-a-data-cube-and-perform-a-simple-ndvi-trend-estimation",
+    "href": "ex02.html#create-a-data-cube-and-perform-a-simple-ndvi-trend-estimation",
+    "title": "Example 2: Time series analysis",
+    "section": "4. Create a data cube and perform a simple NDVI trend estimation",
+    "text": "4. Create a data cube and perform a simple NDVI trend estimation\nNext, we define the data cube geometry (1km spatial resolution), create the data cube, and apply a trend estimation (quantile regression from the quantreg package as a user defined function. Notice that instead of plotting our result, we simply create a netCDF file. This file can be used afterwards with most GDAL-based tools, including other R packages as well as QGIS. Alternatively, calling write_tif() would create a collection of GeoTIFF files.\n\nv = cube_view(extent = list(left = bbox[\"xmin\"], right = bbox[\"xmax\"], bottom = bbox[\"ymin\"], \n              top = bbox[\"ymax\"], t0 = \"2010-01-01\", t1 = \"2019-12-31\"), dx=1000,dy = 1000, \n              dt = \"P1Y\", srs = \"EPSG:25832\", aggregation = \"median\")\nv\n\nraster_cube(col, v) |>\n  select_bands(\"NDVI\") |>\n  reduce_time(names = \"slope\", FUN = function(x) {\n    ndvi = x[\"NDVI\",]/10000\n    t = 1:length(ndvi)\n    if (sum(!is.na(ndvi)) <= 2) {\n      return(NA)\n    }\n    library(quantreg)\n    trend = rq(ndvi ~ t)\n    return(trend$coefficients[\"t\"])\n  }) |>\n  filter_geom(de_shape$geom) |>\n  write_ncdf(\"ndvi_trend.nc\")\n\n## A data cube view object\n## \n## Dimensions:\n##                low             high count pixel_size\n## t       2010-01-01       2019-12-31    10        P1Y\n## y 5235589.56627249 6101589.56627249   866       1000\n## x 280307.319211578 921307.319211578   641       1000\n## \n## SRS: \"EPSG:25832\"\n## Temporal aggregation method: \"median\"\n## Spatial resampling method: \"near\""
+  },
+  {
+    "objectID": "ex02.html#visualize-result-in-an-interactive-map",
+    "href": "ex02.html#visualize-result-in-an-interactive-map",
+    "title": "Example 2: Time series analysis",
+    "section": "5. Visualize result in an interactive map",
+    "text": "5. Visualize result in an interactive map\nSince our result is a simple single-band, single-time netCDF file, we can load it with the terra package and use tmap to create a trend map.\n\nlibrary(tmap)\ntmap_mode(\"view\")\ntm_shape(terra::rast(\"ndvi_trend.nc\")) + \n  tm_raster(palette = \"BrBG\", title = \"NDVI Trend\", style = \"cont\", midpoint = 0, \n            breaks = seq(-0.5,0.5, length.out = 5)) \n\n\n\n\n\nMost significant negative trends relate to some surface mining activities (and deforestation)."
+  },
+  {
+    "objectID": "ex02.html#run-change-detection",
+    "href": "ex02.html#run-change-detection",
+    "title": "Example 2: Time series analysis",
+    "section": "6. Run change detection",
+    "text": "6. Run change detection\nSimilarly, we can apply change detection methods on pixel time series. Below, we use the bfast package and apply bfastmonitor() to extract change dates and magnitudes in 2018.\n\nv = cube_view(view = v, extent = list(t0 = \"2017-01-01\", t1 = \"2018-12-31\"), dt = \"P1M\")\nv\n\nraster_cube(col, v) |>\n  select_bands(\"NDVI\") |>\n  reduce_time(names = c(\"change_date\", \"change_magnitude\"), FUN = function(x) {\n    ndvi = x[\"NDVI\",]/10000\n    if (all(is.na(ndvi))) {\n      return(c(NA,NA))\n    }\n    ndvi_ts = ts(ndvi, start = c(2017, 1), frequency = 12)\n    library(bfast)\n    tryCatch({\n      result = bfastmonitor(ndvi_ts, start = c(2018,1),  history = \"all\", level = 0.02)\n      return(c(result$breakpoint, result$magnitude))\n    }, error = function(x) {\n      return(c(NA,NA))\n    })\n  }) |>\n  filter_geom(de_shape$geom) |>\n  write_ncdf(\"ndvi_changes.nc\")\n\n## A data cube view object\n## \n## Dimensions:\n##                low             high count pixel_size\n## t       2017-01-01       2018-12-31    24        P1M\n## y 5235589.56627249 6101589.56627249   866       1000\n## x 280307.319211578 921307.319211578   641       1000\n## \n## SRS: \"EPSG:25832\"\n## Temporal aggregation method: \"median\"\n## Spatial resampling method: \"near\""
+  },
+  {
+    "objectID": "ex02.html#convert-to-stars-and-create-an-interative-map",
+    "href": "ex02.html#convert-to-stars-and-create-an-interative-map",
+    "title": "Example 2: Time series analysis",
+    "section": "7. Convert to stars and create an interative map",
+    "text": "7. Convert to stars and create an interative map\nWe can now convert the result to a stars object using st_as_stars() and use the tmap package for creating interactive maps.\n\nlibrary(stars)\nncdf_cube(\"ndvi_changes.nc\") |>\n  st_as_stars() -> changes_stars\n\nchng_date = changes_stars[1,,,1]\nchng_magn = changes_stars[2,,,1]\n\ntm_shape(chng_date) + \n  tm_raster(palette = \"GnBu\", title = \"Change date\", style = \"cont\") \n\ntm_shape(chng_magn) + \n  tm_raster(palette = \"GnBu\", title = \"Change magnitude\", style = \"cont\")"
+  }
+]

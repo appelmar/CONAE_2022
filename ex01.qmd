@@ -1,0 +1,192 @@
+---
+title: "Example 1: Cloud-free composite images"
+execute: 
+  eval: true # local
+---
+
+```{r}
+#| label: config
+#| include: false
+if (file.exists("config.R")) {
+  source("config.R")
+}
+```
+
+*Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*
+
+## Introduction
+
+In this example, we will create a cloud-free RGB composite image for the [Córdoba Province, Argentina](https://en.wikipedia.org/wiki/C%C3%B3rdoba_Province,_Argentina) from a collection of Seninel-2 images.
+We will read imagery from the [open Sentinel-2 COG catalog on AWS](https://registry.opendata.aws/sentinel-2-l2a-cogs/) and use the available
+[Earth Search STAC-API service](https://earth-search.aws.element84.com/v0) to search for images intersecting with our region of interest. 
+
+
+```{r}
+#| include: false
+library(tmap)
+tmap_options(basemaps = c(OSM = "OpenStreetMap", Imagery = "Esri.WorldImagery")) # TODO: put in config
+tmap_mode("view")
+```
+
+
+## 1. Define area of interest 
+
+Our area of interest is provided as a GeoPackage file (data/cordoba_region.gpkg), containing a single polygon. 
+We can use the `sf` [@sf] package to read the file afterwards use the `tmap` [@tmap] package to create a simple map.
+
+```{r}
+library(sf)
+cordoba_shape = read_sf("data/cordoba_region.gpkg")
+
+library(tmap)
+tm_shape(st_geometry(cordoba_shape)) +  
+  tm_polygons(alpha = 0.2, col = "red")
+```
+
+
+
+## 2. Query available images from STAC
+
+To find images that intersect with our region and time of interest, we can extract the bounding box of our 
+polygons with `st_bbox()`. The STAC request, however, expects WGS84 coordinates and we therefore transform (`st_transform`) the polygon and derive the bounding box again. 
+
+
+```{r}
+bbox = st_bbox(cordoba_shape) 
+cordoba_shape |>
+  st_transform("EPSG:4326") |>
+  st_bbox() -> bbox_wgs84
+bbox_wgs84
+```
+
+Next, we can load the `rstac` package, connect to the Earth Search service and request images that intersect with
+the derived bounding box and the provided time range (March 2022).
+
+```{r}
+library(rstac)
+s = stac("https://earth-search.aws.element84.com/v0")
+items = s |>
+  stac_search(collections = "sentinel-s2-l2a-cogs",
+              bbox = c(bbox_wgs84["xmin"],bbox_wgs84["ymin"],
+                       bbox_wgs84["xmax"],bbox_wgs84["ymax"]), 
+              datetime = "2022-03-01/2022-03-31") |>
+  post_request() |> items_fetch(progress = FALSE)
+items
+```
+
+The result contains 385 images as a list `items$features`. Each item (image) is in turn a list with properties, 
+assets (links to S3 objects / files), and other metadata. Below, we show some example fields of a single item.
+
+```{r}
+items$features[[20]]$properties
+items$features[[20]]$assets$B08
+```
+
+
+## 3. Create a gdalcubes image collection from STAC result
+
+To create a data cube from the images contained in the STAC response, we can now use the `gdalcubes` package.
+First, we need to convert the STAC item list to a gdalcubes _image collection object_, which indexes available images (in a single-file database). Image collection objects do not contain any pixel data and hence are very small. Below, we use the `stac_image_collection()` function that receives a list of STAC items as input and returns a gdalcubes image collection as output. We explicitly provide names of assets to make sure that the "SCL" band is included and at the same time apply a filter function on images to ignore cloudy images.
+
+
+```{r}
+library(gdalcubes)
+assets = c("B01","B02","B03","B04","B05","B06", "B07","B08","B8A","B09","B11","SCL")
+s2_collection = stac_image_collection(items$features, asset_names = assets, 
+                                      property_filter = function(x) {x[["eo:cloud_cover"]] < 20})
+s2_collection
+```
+
+
+
+## 4. Create a (virtual) data cube
+
+We can now define our target data cube, including the coordinate reference system, the pixel sizes, the spatiotemporal extent as well as methods used for spatial resampling and temporal aggregation. 
+
+
+```{r}
+v= cube_view(srs="EPSG:3857",  dx=500, dy=500, dt="P1D", 
+             aggregation="median", resampling = "average",
+             extent=list(t0 = "2022-03-01", t1 = "2022-03-31",
+                         left=bbox["xmin"], right=bbox["xmax"],
+                         top=bbox["ymax"], bottom=bbox["ymin"]))
+v
+```
+
+To ignore cloud and cloud shadow pixels during construction of the data cube, we define a mask using the [SCL band](https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-2-msi/level-2a/algorithm) and afterwards combine the collection, the data cube view, and the mask to build a data cube.  
+
+```{r}
+S2.mask = image_mask("SCL", values = c(3,8,9))
+S2_cube = raster_cube(s2_collection, v, S2.mask)
+S2_cube
+```
+
+Notice that the result is a _virtual_ data cube (or a _proxy_ object) that still does not contain any pixel data and consumes any processing / memory resources. Instead, the object simply knows _how_ to create the cube when needed (e.g. when you call `plot()`, `write_tif()`, `write_ncdf()`, or similar). This concept is sometimes referred to as _lazy evaluation_.
+
+
+## 5. Process data cube and plot result
+
+Given the data cube, we can apply built-in data cube operations. Notice that calling these operations still will
+not start any expensive computations / data reading and the returned object is still a _virtual_ data cube. 
+To derive a simple cloud-free mosaic image of our study region, we use the `select_bands()` function to filter by spectral bands, the `reduce_time()` function to calculate median values for all pixel time series and all three bands, and the `filter_geom()` function to cut our polygon from the result. 
+Calling `plot()` will eventually start needed computations and finally plot a composite image. 
+
+
+```{r}
+S2_cube |>
+  select_bands(c("B02", "B03", "B04")) |>
+  reduce_time("median(B02)","median(B03)","median(B04)") |>
+  filter_geom(cordoba_shape$geom) |>
+  plot(rgb = 3:1, zlim = c(0, 1800))
+```
+
+Notice that computations are executed in parallel. Calling `gdalcubes_options(parallel = 8)` can be used to e.g. use up to 8 parallel worker processes.
+
+
+In addition to the operations used above, the `gdalcubes` package provides the following operations on data cubes.
+
+
+| Operation           | Description                                                                        | 
+|:--------------------|:-----------------------------------------------------------------------------------|    
+|`aggregate_space`    | Reduce spatial resolution of a cube by applying a spatial aggregation function. |
+|`aggregate_time`     | Aggregate and/or regularize time series. |
+|`apply_pixel`        | Apply an arithmetic expression to all data cube pixels.    |
+|`crop`               | Extract a rectangular spatial / temporal / spatiotemporal window. |
+|`fill_time`          | Fill missing values of a data cube by simple time series interpolation. |
+|`filter_geom`        | Filter pixels by a a spatial polygon. |
+|`filter_pixel`       | Filter pixels by a logical expressions on band values. |
+|`join_bands`         | Combine bands of two identically shaped data cubes. |
+|`reduce_space`       | Apply a reducer function to all spatial slices of a data cube.  |
+|`reduce_time`        | Apply a reducer function to all pixel time series. |
+|`select_bands`       | Select specific bands of a data cube.  |
+|`select_time`        | Select irregular time slices of a data cube. |
+|`slice_space`        | Select a single time series of a data cube. |
+|`slice_time`         | Select a single time slice of a data cube. |
+|`window_time`        | Apply a moving window aggregate or convolution kernel to all pixel time series. |
+
+: Built-in data cube operations {#tbl-operations}
+
+
+
+
+## 6. Greenest pixel composite with a user-defined function  
+
+Some operations accept user-defined R functions as arguments. For example, we can write
+our own reducer function that computes per pixel NDVI values, and returns RGB values at the day
+with maximum NDVI (_greenest_ pixel) as in the following code example.
+
+```{r}
+raster_cube(s2_collection, v, S2.mask) |>
+  select_bands(c("B02", "B03", "B04", "B08")) |>
+  reduce_time(names=c("blue", "green", "red"), FUN = function(x) {
+    ndvi = (x["B08", ] - x["B04", ]) / (x["B08", ] + x["B04", ])
+    if (all(is.na(ndvi))) {
+      return(c(NA,NA,NA))
+    }
+    i = which.max(ndvi)
+    return(x[c("B02", "B03", "B04"), i])
+  }) |>
+  filter_geom(cordoba_shape$geom) |>
+  plot(rgb = 3:1, zlim = c(0, 1800))
+```
+

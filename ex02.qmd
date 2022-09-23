@@ -1,0 +1,168 @@
+---
+title: "Example 2: Time series analysis"
+execute: 
+  eval: true # local
+---
+
+```{r}
+#| label: config
+#| include: false
+if (file.exists("config.R")) {
+  source("config.R")
+}
+```
+
+*Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*
+
+## Introduction
+
+In this example, we use [MODIS vegetation index data (MOD13A1) on AWS](https://registry.opendata.aws/modis-astraea/) to apply more complex time series analysis (trend estimation and change detection). The steps performed are very similar to the first example. However, the data is provided as in a _requester pays_ bucket, i.e., we need to pay for data requests and transfer. To do so, we need to set up an AWS IAM-user with S3reader rights and some configuration options before we can read images:
+
+```{r}
+#| eval: false
+gdalcubes_set_gdal_config("AWS_ACCESS_KEY_ID", "xxxxxxxxx")
+gdalcubes_set_gdal_config("AWS_SECRET_ACCESS_KEY", "xxxxxxxxxx")
+gdalcubes_set_gdal_config("AWS_REQUEST_PAYER", "requester")
+```
+
+
+## 1.  Define area of interest 
+
+Our study area is the whole country of Germany, provided as GeoPackage file (data/de.gpkg), which we can read using the `sf` package.
+
+```{r}
+library(sf)
+de_shape = read_sf("data/de.gpkg")
+```
+
+
+## 2. Query available images from STAC
+
+We calculate the bounding box of the original as well as of the transformed polygon and request images from 
+the corresponding STAC service, using the "mod13a1" collection.
+
+```{r}
+bbox = st_bbox(de_shape) 
+de_shape |>
+  st_transform("EPSG:4326") |>
+  st_bbox() -> bbox_wgs84
+bbox_wgs84
+
+library(rstac)
+s = stac("https://eod-catalog-svc-prod.astraea.earth")
+items = s |>
+  stac_search(collections = "mod13a1",
+              bbox = c(bbox_wgs84["xmin"],bbox_wgs84["ymin"],
+                       bbox_wgs84["xmax"],bbox_wgs84["ymax"]),
+              datetime = "2010-01-01T00:00:00Z/2019-12-31T00:00:00Z") |>
+  post_request() |> items_fetch(progress = FALSE)
+items
+```
+
+
+
+## 3. Create a gdalcubes image collection from STAC result
+
+We simply convert the STAC response to an image collection using the `stac_image_collection()` function. 
+
+```{r}
+library(gdalcubes)
+col = stac_image_collection(items$features, asset_names = c("NDVI","VIQ"))
+col
+```
+
+
+
+## 4. Create a data cube and perform a simple NDVI trend estimation  
+
+Next, we define the data cube geometry (1km spatial resolution), create the data cube, and apply a trend estimation (quantile regression from the `quantreg` package as a user defined function. Notice that instead of plotting our result, we simply create a netCDF file. This file can be used afterwards with most GDAL-based tools, including other R packages as well as QGIS. Alternatively, calling `write_tif()` would create a collection of GeoTIFF files. 
+
+```{r}
+v = cube_view(extent = list(left = bbox["xmin"], right = bbox["xmax"], bottom = bbox["ymin"], 
+              top = bbox["ymax"], t0 = "2010-01-01", t1 = "2019-12-31"), dx=1000,dy = 1000, 
+              dt = "P1Y", srs = "EPSG:25832", aggregation = "median")
+v
+
+raster_cube(col, v) |>
+  select_bands("NDVI") |>
+  reduce_time(names = "slope", FUN = function(x) {
+    ndvi = x["NDVI",]/10000
+    t = 1:length(ndvi)
+    if (sum(!is.na(ndvi)) <= 2) {
+      return(NA)
+    }
+    library(quantreg)
+    trend = rq(ndvi ~ t)
+    return(trend$coefficients["t"])
+  }) |>
+  filter_geom(de_shape$geom) |>
+  write_ncdf("ndvi_trend.nc")
+```
+
+
+## 5. Visualize result in an interactive map
+
+Since our result is a simple single-band, single-time netCDF file, we can load it with the `terra` package and use `tmap` to create a trend map. 
+
+```{r}
+library(tmap)
+tmap_mode("view")
+tm_shape(terra::rast("ndvi_trend.nc")) + 
+  tm_raster(palette = "BrBG", title = "NDVI Trend", style = "cont", midpoint = 0, 
+            breaks = seq(-0.5,0.5, length.out = 5)) 
+```
+
+Most significant negative trends relate to some surface mining activities (and deforestation).
+
+
+
+## 6. Run change detection
+
+Similarly, we can apply change detection methods on pixel time series. Below, we use the `bfast` package and apply `bfastmonitor()` to extract change dates and magnitudes in 2018. 
+
+```{r}
+v = cube_view(view = v, extent = list(t0 = "2017-01-01", t1 = "2018-12-31"), dt = "P1M")
+v
+
+raster_cube(col, v) |>
+  select_bands("NDVI") |>
+  reduce_time(names = c("change_date", "change_magnitude"), FUN = function(x) {
+    ndvi = x["NDVI",]/10000
+    if (all(is.na(ndvi))) {
+      return(c(NA,NA))
+    }
+    ndvi_ts = ts(ndvi, start = c(2017, 1), frequency = 12)
+    library(bfast)
+    tryCatch({
+      result = bfastmonitor(ndvi_ts, start = c(2018,1),  history = "all", level = 0.02)
+      return(c(result$breakpoint, result$magnitude))
+    }, error = function(x) {
+      return(c(NA,NA))
+    })
+  }) |>
+  filter_geom(de_shape$geom) |>
+  write_ncdf("ndvi_changes.nc")
+```
+
+
+## 7. Convert to stars and create an interative map
+
+We can now convert the result to a stars object using `st_as_stars()` and use the `tmap` package for creating interactive maps.
+
+```{r}
+#| layout-ncol: 2
+library(stars)
+ncdf_cube("ndvi_changes.nc") |>
+  st_as_stars() -> changes_stars
+
+chng_date = changes_stars[1,,,1]
+chng_magn = changes_stars[2,,,1]
+
+tm_shape(chng_date) + 
+  tm_raster(palette = "GnBu", title = "Change date", style = "cont") 
+
+tm_shape(chng_magn) + 
+  tm_raster(palette = "GnBu", title = "Change magnitude", style = "cont") 
+```
+
+
