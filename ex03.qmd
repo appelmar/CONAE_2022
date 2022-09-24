@@ -13,6 +13,11 @@ if (file.exists("config.R")) {
 }
 ```
 
+```{r}
+#| include: false
+gdalcubes_options(default_chunksize = c(1,768,768))
+```
+
 
 *Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*
 
@@ -64,7 +69,7 @@ items = s |>
   stac_search(collections = "sentinel-s2-l2a-cogs",
               bbox = c(bbox["xmin"],bbox["ymin"],
                        bbox["xmax"],bbox["ymax"]), 
-              datetime = "2018-04-01/2018-12-31") |>
+              datetime = "2018-04-01/2018-09-30") |>
   post_request() |> items_fetch(progress = FALSE)
 items
 ```
@@ -89,6 +94,7 @@ s2_collection =
 
 Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively.
 We also calculate the NDVI, which we would like to use as "explanatory" variable. 
+
 
 ```{r}
 s2_collection = image_collection("S2_de_2018.db")

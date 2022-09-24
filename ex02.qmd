@@ -12,6 +12,11 @@ if (file.exists("config.R")) {
 }
 ```
 
+```{r}
+#| include: false
+gdalcubes_options(default_chunksize = c(1,150,150))
+```
+
 *Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*
 
 ## Introduction
@@ -86,7 +91,7 @@ v
 raster_cube(col, v) |>
   select_bands("NDVI") |>
   reduce_time(names = "slope", FUN = function(x) {
-    ndvi = x["NDVI",]/10000
+    ndvi = x["NDVI",]/1000
     t = 1:length(ndvi)
     if (sum(!is.na(ndvi)) <= 2) {
       return(NA)
@@ -127,7 +132,7 @@ v
 raster_cube(col, v) |>
   select_bands("NDVI") |>
   reduce_time(names = c("change_date", "change_magnitude"), FUN = function(x) {
-    ndvi = x["NDVI",]/10000
+    ndvi = x["NDVI",]/1000
     if (all(is.na(ndvi))) {
       return(c(NA,NA))
     }

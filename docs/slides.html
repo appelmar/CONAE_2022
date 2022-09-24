@@ -406,7 +406,7 @@
 <li>Lots of separate data centers with large clusters</li>
 </ul>
 
-<img data-src=".img/aws.png" class="r-stretch"><ul>
+<img data-src="img/aws.png" class="r-stretch"><ul>
 <li>In total: &gt; 25 regions and &gt; 80 availability zones</li>
 <li>Basic service to run (virtual) machines: EC2 (Amazon Elastic Compute Cloud)</li>
 </ul>
@@ -424,7 +424,7 @@
 <section id="aws-management-console" class="slide level2">
 <h2>AWS Management Console</h2>
 
-<img data-src=".img/screenshot_aws.png" class="r-stretch quarto-figure-center"></section></section>
+<img data-src="img/screenshot_aws.png" class="r-stretch quarto-figure-center"></section></section>
 <section>
 <section id="satellite-imagery-on-cloud-platforms" class="title-slide slide level1 center" data-background-color="#546e7a">
 <h1>2. Satellite imagery on cloud platforms</h1>
@@ -527,7 +527,7 @@
 <section id="stac-specification" class="slide level2">
 <h2>STAC specification</h2>
 
-<img data-src=".img/STAC_overview.png" class="r-stretch quarto-figure-center"><ul>
+<img data-src="img/STAC_overview.png" class="r-stretch quarto-figure-center"><ul>
 <li><strong>Items</strong> are inseparable objects of data (assets) and metadata (e.g.&nbsp;a single satellite image)</li>
 <li><strong>Catalogs</strong> can be nested</li>
 <li><strong>Collections</strong> extend catalogs and can be used to group items and their metadata (e.g.&nbsp;license)</li>
@@ -565,7 +565,7 @@
 <li><p>may contain overview images (image pyramids)</p></li>
 </ul>
 </div><div class="column" style="width:50%;">
-<p><img data-src=".img/s2_overviews.png"></p>
+<p><img data-src="img/s2_overviews.png"></p>
 </div>
 </div>
 <p><strong><a href="https://gdal.org/">GDAL</a> can efficiently read and write COGs, and access object storage in the cloud with <a href="https://gdal.org/user/virtual_file_systems.html"><em>virtual file systems</em></a></strong></p>
@@ -574,12 +574,12 @@
 <h2>Satellite image collections</h2>
 <p>Images spatially overlap, have different coordinate reference systems, have different pixel sizes depending on spectral bands, yield irregular time series for larger areas</p>
 
-<img data-src=".img/screenshot_cophub.png" class="r-stretch quarto-figure-center"></section>
+<img data-src="img/screenshot_cophub.png" class="r-stretch quarto-figure-center"></section>
 <section id="what-is-a-data-cube" class="slide level2">
 <h2>What is a data cube?</h2>
 <p>Here: <strong>A four-dimensional (space, time, variable / band) regular raster data cube</strong></p>
 
-<img data-src=".img/cube.png" class="r-stretch"><ul>
+<img data-src="img/cube.png" class="r-stretch"><ul>
 <li>collect all observations in one object</li>
 <li><span class="math inline">\(b \times t \times y \times x \rightarrow\)</span> real value</li>
 <li>single CRS, cells have constant temporal duration, and spatial size</li>
@@ -587,7 +587,7 @@
 </section>
 <section id="data-cube-creation-is-lossy" class="slide level2">
 <h2>Data Cube creation is lossy</h2>
-<p><img data-src=".img/cubecreation.png"> <strong>Important:</strong> There is no single correct data cube!</p>
+<p><img data-src="img/cubecreation.png"> <strong>Important:</strong> There is no single correct data cube!</p>
 </section></section>
 <section>
 <section id="r-ecosystem-for-analyzing-satellite-imagery-in-the-cloud" class="title-slide slide level1 center" data-background-color="#546e7a">
@@ -631,7 +631,7 @@
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src=".img/cubecreation.png" width="550"></p>
+<p><img data-src="img/cubecreation.png" width="550"></p>
 </figure>
 </div>
 </div>

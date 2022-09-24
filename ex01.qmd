@@ -12,6 +12,11 @@ if (file.exists("config.R")) {
 }
 ```
 
+```{r}
+#| include: false
+gdalcubes_options(default_chunksize = c(1,128,128))
+```
+
 *Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*
 
 ## Introduction
