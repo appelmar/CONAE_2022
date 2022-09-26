@@ -37,7 +37,7 @@ tmap_mode("view")
 ## 1. Define area of interest 
 
 Our area of interest is provided as a GeoPackage file (data/cordoba_region.gpkg), containing a single polygon. 
-We can use the `sf` [@sf] package to read the file afterwards use the `tmap` [@tmap] package to create a simple map.
+We can use the `sf` package [@sf] to read the file afterwards use the `tmap` package [@tmap] to create a simple map.
 
 ```{r}
 library(sf)
@@ -64,7 +64,7 @@ cordoba_shape |>
 bbox_wgs84
 ```
 
-Next, we can load the `rstac` package, connect to the Earth Search service and request images that intersect with
+Next, we can load the `rstac` package [@rstac], connect to the Earth Search service and request images that intersect with
 the derived bounding box and the provided time range (March 2022).
 
 ```{r}
@@ -90,7 +90,7 @@ items$features[[20]]$assets$B08
 
 ## 3. Create a gdalcubes image collection from STAC result
 
-To create a data cube from the images contained in the STAC response, we can now use the `gdalcubes` package.
+To create a data cube from the images contained in the STAC response, we can now use the `gdalcubes` package [@gdalcubes].
 First, we need to convert the STAC item list to a gdalcubes _image collection object_, which indexes available images (in a single-file database). Image collection objects do not contain any pixel data and hence are very small. Below, we use the `stac_image_collection()` function that receives a list of STAC items as input and returns a gdalcubes image collection as output. We explicitly provide names of assets to make sure that the "SCL" band is included and at the same time apply a filter function on images to ignore cloudy images.
 
 

@@ -24,16 +24,16 @@ gdalcubes_options(default_chunksize = c(1,768,768))
 
 ## Introduction
 
-Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from provided labeled points. Therefore, we will use primary data from the [European Land Use and Coverage Area frame Survey (LUCAS)](https://ec.europa.eu/eurostat/web/lucas/) containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see [here](https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018)). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.
+Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from labeled points. Therefore, we will use primary data from the [European Land Use and Coverage Area frame Survey (LUCAS)](https://ec.europa.eu/eurostat/web/lucas/) containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see [here](https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018)). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.
 
 ## 1. Load and preprocess samples
 
-First, we need to convert our CSV table into a spatially referenced sf object. 
+First, we need to convert our CSV table into a spatially referenced sf [@sf] object. 
 After reading the CSV files, we remove rows without valid coordinates and create an sf object using `st_as_sf()` by specifying the names of latitude and longitude columns.
 
 ```{r}
 library(sf)
-x = read.csv("data/DE_2018_20200213.CSV")
+x = read.csv("data/DE_2018_20200213.CSV") # downloaded from https://ec.europa.eu/eurostat/cache/lucas/DE_2018_20200213.CSV
 x = x[-which(is.na(x$TH_LAT) | is.na(x$TH_LONG)),]
 x = st_as_sf(x, coords = c("TH_LONG", "TH_LAT"), crs = "EPSG:4326")
 x$t = as.Date(x$SURVEY_DATE, format = "%d/%m/%y") 
@@ -43,7 +43,7 @@ nrow(x)
 
 The LC1 column contains codes for primary land cover types of the samples. We are interested in _common wheat_, which is decoded as B11. 
 
-We now use the `dplyr` package to sample 100 corresponding observations and afterwards plot the result.
+We now use the `dplyr` package [@dplyr] to sample 100 corresponding observations and afterwards plot the result.
 ```{r}
 x[startsWith(x$LC1, c("B11")), c("LC1","t")] |>
   dplyr::slice_sample(n = 100) -> training_sites
@@ -51,7 +51,7 @@ x[startsWith(x$LC1, c("B11")), c("LC1","t")] |>
 plot(training_sites[,"LC1"])
 ```
 
-As expected from random sampling, points are scattared all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.
+As expected from random sampling, points are scattered all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.
 
 
 ## 2. Query related images from STAC
@@ -92,13 +92,15 @@ s2_collection =
 
 ## 4. Create an NDVI data cube
 
-Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively.
-We also calculate the NDVI, which we would like to use as "explanatory" variable. 
+Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively. We also calculate the NDVI, which we would like to use as "explanatory" variable. 
 
 
 ```{r}
 s2_collection = image_collection("S2_de_2018.db")
 s2_collection
+```
+
+```{r}
 v = cube_view(extent=s2_collection, dt="P5D", dx=10, dy=10, srs="EPSG:3857", 
               aggregation = "median", resampling = "nearest")
 
@@ -128,7 +130,7 @@ ndvi_obs
 
 ## 6. Combine results with geometries
 
-To combine the extracted data cube values with the original sf objects including the geometries, the merge() function can be used. merge() performs table join operations on common columns (e.g. IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e. rows with FIDs that only exist in one table will be dropped. Alternatively, we can set all.x=TRUE to make sure that our result contains all features from the original dataset (left outer join).
+To combine the extracted data cube values with the original sf object with geometries, the `merge()` function can be used. `merge()` performs table join operations on common columns (e.g. IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e. rows with FIDs that only exist in one table will be dropped. Alternatively, we can set `all.x=TRUE` to make sure that our result contains all features from the original dataset (left outer join).
 
 ```{r}
 sf = training_sites
@@ -141,8 +143,8 @@ plot(df[,"NDVI"])
 
 ## 7. Extract complete time series
 
-If we skip the `time_column` argument in `extract_geom()` we can extract complete time series at irregular points. 
-Below, we use the same locations but extract complete time series, which we plot using the `ggplot2` package.
+If we skip the `time_column` argument in `extract_geom()`, we can extract complete time series at irregular points. 
+Below, we use the same locations but extract complete time series, which we afterwards plot using the `ggplot2` package [@ggplot2].
 
 ```{r}
 wheat_timeseries <- extract_geom(s2_cube, training_sites)

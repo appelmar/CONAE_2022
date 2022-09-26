@@ -78,6 +78,25 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 
@@ -192,14 +211,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><em>Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region <code>us-west-2</code> (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.</em></p>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from provided labeled points. Therefore, we will use primary data from the <a href="https://ec.europa.eu/eurostat/web/lucas/">European Land Use and Coverage Area frame Survey (LUCAS)</a> containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see <a href="https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018">here</a>). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.</p>
+<p>Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from labeled points. Therefore, we will use primary data from the <a href="https://ec.europa.eu/eurostat/web/lucas/">European Land Use and Coverage Area frame Survey (LUCAS)</a> containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see <a href="https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018">here</a>). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.</p>
 </section>
 <section id="load-and-preprocess-samples" class="level2">
 <h2 class="anchored" data-anchor-id="load-and-preprocess-samples">1. Load and preprocess samples</h2>
-<p>First, we need to convert our CSV table into a spatially referenced sf object. After reading the CSV files, we remove rows without valid coordinates and create an sf object using <code>st_as_sf()</code> by specifying the names of latitude and longitude columns.</p>
+<p>First, we need to convert our CSV table into a spatially referenced sf <span class="citation" data-cites="sf">(<a href="#ref-sf" role="doc-biblioref">Pebesma 2018</a>)</span> object. After reading the CSV files, we remove rows without valid coordinates and create an sf object using <code>st_as_sf()</code> by specifying the names of latitude and longitude columns.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/DE_2018_20200213.CSV"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/DE_2018_20200213.CSV"</span>) <span class="co"># downloaded from https://ec.europa.eu/eurostat/cache/lucas/DE_2018_20200213.CSV</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> x[<span class="sc">-</span><span class="fu">which</span>(<span class="fu">is.na</span>(x<span class="sc">$</span>TH_LAT) <span class="sc">|</span> <span class="fu">is.na</span>(x<span class="sc">$</span>TH_LONG)),]</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">st_as_sf</span>(x, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"TH_LONG"</span>, <span class="st">"TH_LAT"</span>), <span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>x<span class="sc">$</span>t <span class="ot">=</span> <span class="fu">as.Date</span>(x<span class="sc">$</span>SURVEY_DATE, <span class="at">format =</span> <span class="st">"%d/%m/%y"</span>) </span>
@@ -222,7 +241,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>The LC1 column contains codes for primary land cover types of the samples. We are interested in <em>common wheat</em>, which is decoded as B11.</p>
-<p>We now use the <code>dplyr</code> package to sample 100 corresponding observations and afterwards plot the result.</p>
+<p>We now use the <code>dplyr</code> package <span class="citation" data-cites="dplyr">(<a href="#ref-dplyr" role="doc-biblioref">Wickham et al. 2022</a>)</span> to sample 100 corresponding observations and afterwards plot the result.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">startsWith</span>(x<span class="sc">$</span>LC1, <span class="fu">c</span>(<span class="st">"B11"</span>)), <span class="fu">c</span>(<span class="st">"LC1"</span>,<span class="st">"t"</span>)] <span class="sc">|&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">100</span>) <span class="ot">-&gt;</span> training_sites</span>
@@ -232,7 +251,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><img src="ex03_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>As expected from random sampling, points are scattared all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.</p>
+<p>As expected from random sampling, points are scattered all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.</p>
 </section>
 <section id="query-related-images-from-stac" class="level2">
 <h2 class="anchored" data-anchor-id="query-related-images-from-stac">2. Query related images from STAC</h2>
@@ -252,21 +271,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>items</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>##      xmin      ymin      xmax      ymax 
-##  6.208992 48.295489 14.570052 54.835600 
+##  7.911385 48.007580 14.909136 54.597501 
 ## ###STACItemCollection
-## - matched feature(s): 5724
-## - features (5724 item(s) / 0 not fetched):
-##   - S2B_32ULV_20180930_0_L2A
+## - matched feature(s): 4246
+## - features (4246 item(s) / 0 not fetched):
 ##   - S2B_32UME_20180930_0_L2A
 ##   - S2B_32UNF_20180930_0_L2A
-##   - S2B_32ULF_20180930_0_L2A
-##   - S2B_31UGQ_20180930_0_L2A
-##   - S2B_31UGU_20180930_0_L2A
-##   - S2B_31UGV_20180930_0_L2A
-##   - S2B_32ULA_20180930_0_L2A
-##   - S2B_32ULB_20180930_0_L2A
-##   - S2B_31UGP_20180930_0_L2A
-##   - ... with 5714 more feature(s).
+##   - S2B_32UMB_20180930_0_L2A
+##   - S2B_32UMD_20180930_0_L2A
+##   - S2B_32UNC_20180930_0_L2A
+##   - S2B_32UPF_20180930_0_L2A
+##   - S2B_32UMA_20180930_0_L2A
+##   - S2B_32UMC_20180930_0_L2A
+##   - S2B_32UNE_20180930_0_L2A
+##   - S2B_32UMV_20180930_0_L2A
+##   - ... with 4236 more feature(s).
 ## - assets: 
 ## overview, thumbnail, metadata, B11, B01, B12, B02, B03, B04, AOT, B05, B06, B07, B08, B8A, B09, WVP, visual, SCL, info
 ## - other field(s): 
@@ -294,49 +313,52 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively. We also calculate the NDVI, which we would like to use as “explanatory” variable.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> <span class="fu">image_collection</span>(<span class="st">"S2_de_2018.db"</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>s2_collection</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="fu">cube_view</span>(<span class="at">extent=</span>s2_collection, <span class="at">dt=</span><span class="st">"P5D"</span>, <span class="at">dx=</span><span class="dv">10</span>, <span class="at">dy=</span><span class="dv">10</span>, <span class="at">srs=</span><span class="st">"EPSG:3857"</span>, </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">aggregation =</span> <span class="st">"median"</span>, <span class="at">resampling =</span> <span class="st">"nearest"</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>S2.mask <span class="ot">=</span> <span class="fu">image_mask</span>(<span class="st">"SCL"</span>, <span class="at">values =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">9</span>))</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">raster_cube</span>(s2_collection, v, <span class="at">mask =</span> S2.mask) <span class="sc">|&gt;</span> </span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_bands</span>(<span class="fu">c</span>(<span class="st">"B04"</span>,<span class="st">"B08"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply_pixel</span>(<span class="st">"(B08-B04)/(B08+B04)"</span>, <span class="st">"NDVI"</span>) <span class="ot">-&gt;</span> s2_cube</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>s2_cube</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>s2_collection</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## Image collection object, referencing 1767 images with 5 bands
+<pre><code>## Image collection object, referencing 1358 images with 5 bands
 ## Images:
-##                       name     left      top   bottom    right
-## 1 S2B_32ULV_20180930_0_L2A 6.230946 49.64597 48.63304 7.763442
-## 2 S2B_31UGQ_20180930_0_L2A 5.714101 49.61960 48.58836 7.285031
-## 3 S2B_31UGU_20180930_0_L2A 5.927835 53.21198 52.17549 7.634167
-## 4 S2B_32ULA_20180930_0_L2A 6.178682 50.54532 49.53174 7.752769
-## 5 S2B_32ULB_20180930_0_L2A 6.123723 51.44399 50.42972 7.729287
-## 6 S2B_31UGP_20180930_0_L2A 5.667023 48.72092 47.69193 7.208270
+##                       name      left      top   bottom     right
+## 1 S2B_32UMB_20180930_0_L2A  7.560563 51.45114 50.45528  8.908829
+## 2 S2B_32UMD_20180930_0_L2A  7.500956 53.24953 52.25346  9.146262
+## 3 S2B_32UNC_20180930_0_L2A  8.999721 52.35046 51.62562  9.383598
+## 4 S2B_32UPF_20180930_0_L2A 10.540773 55.03692 54.40879 10.913343
+## 5 S2B_32UMA_20180930_0_L2A  7.588101 50.55099 49.55650  8.451982
+## 6 S2B_32UMC_20180930_0_L2A  7.531544 52.35038 51.35444  9.143276
 ##              datetime        srs
 ## 1 2018-09-30T10:44:11 EPSG:32632
-## 2 2018-09-30T10:44:11 EPSG:32631
-## 3 2018-09-30T10:44:11 EPSG:32631
+## 2 2018-09-30T10:44:11 EPSG:32632
+## 3 2018-09-30T10:44:11 EPSG:32632
 ## 4 2018-09-30T10:44:11 EPSG:32632
 ## 5 2018-09-30T10:44:11 EPSG:32632
-## 6 2018-09-30T10:44:11 EPSG:32631
-## [ omitted 1761 images ] 
+## 6 2018-09-30T10:44:11 EPSG:32632
+## [ omitted 1352 images ] 
 ## 
 ## Bands:
 ##   name offset scale unit nodata image_count
-## 1  B02      0     1                    1767
-## 2  B03      0     1                    1767
-## 3  B04      0     1                    1767
-## 4  B08      0     1                    1767
-## 5  SCL      0     1                    1767
-## 
-## A data cube proxy object
+## 1  B02      0     1                    1358
+## 2  B03      0     1                    1358
+## 3  B04      0     1                    1358
+## 4  B08      0     1                    1358
+## 5  SCL      0     1                    1358</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="fu">cube_view</span>(<span class="at">extent=</span>s2_collection, <span class="at">dt=</span><span class="st">"P5D"</span>, <span class="at">dx=</span><span class="dv">10</span>, <span class="at">dy=</span><span class="dv">10</span>, <span class="at">srs=</span><span class="st">"EPSG:3857"</span>, </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">aggregation =</span> <span class="st">"median"</span>, <span class="at">resampling =</span> <span class="st">"nearest"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>S2.mask <span class="ot">=</span> <span class="fu">image_mask</span>(<span class="st">"SCL"</span>, <span class="at">values =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">9</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">raster_cube</span>(s2_collection, v, <span class="at">mask =</span> S2.mask) <span class="sc">|&gt;</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_bands</span>(<span class="fu">c</span>(<span class="st">"B04"</span>,<span class="st">"B08"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply_pixel</span>(<span class="st">"(B08-B04)/(B08+B04)"</span>, <span class="st">"NDVI"</span>) <span class="ot">-&gt;</span> s2_cube</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>s2_cube</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>## A data cube proxy object
 ## 
 ## Dimensions:
 ##                low             high  count pixel_size chunk_size
 ## t       2018-04-01       2018-10-02     37        P5D          1
 ## y 6055573.54251774 7370993.54251774 131542         10        768
-## x 500425.080299257 1686795.08029926 118637         10        768
+## x 827616.484143196  1686796.4841432  85918         10        768
 ## 
 ## Bands:
 ##   name offset scale nodata unit
@@ -348,127 +370,136 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 class="anchored" data-anchor-id="extract-ndvi-values-from-point-samples">5. Extract NDVI values from point samples</h2>
 <p>Now, we can extract values from the cube using the <code>extract_geom()</code> function. Given a data cube and any simple feature geometries as an sf object, the function can be used as a general method to extract data cube pixel values at irregular locations. <code>extract_geom()</code> returns a <code>data.frame</code> with columns for feature identifiers (FIDs, often row numbers of the <code>sf</code> object), time, and bands / variables of the data cube. Each row represents the data cube values of one pixel relating to the feature given by the FID column. For anything other than simple point geometries (e.g.&nbsp;POLYGON, LINESTRING, MULTIPOINT, and similar), the result may contain multiple rows per feature. In these cases, it is possible to apply an aggregation function to compute mean, median or similar summary statistics over features.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ndvi_obs <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites, <span class="at">time_column =</span> <span class="st">"t"</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(ndvi_obs)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>ndvi_obs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ndvi_obs <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites, <span class="at">time_column =</span> <span class="st">"t"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(ndvi_obs)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ndvi_obs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## [1] 50
+<pre><code>## [1] 48
 ##    FID       time      NDVI
-## 1   96 2018-05-06 0.6957929
-## 2    3 2018-05-11 0.3665301
-## 3   39 2018-06-05 0.7217676
-## 4   41 2018-05-26 0.6803954
-## 5   83 2018-05-21 0.7667411
-## 6   90 2018-06-05 0.8666667
-## 7   48 2018-06-05 0.8512472
-## 8   51 2018-05-31 0.3325942
-## 9   67 2018-06-30 0.4760018
-## 10  66 2018-05-21 0.8070833
-## 11  93 2018-07-20 0.1620319
-## 12  75 2018-05-21 0.9128920
-## 13  85 2018-07-05 0.2526395
-## 14  42 2018-05-21 0.8997276
-## 15  52 2018-07-05 0.1932079
-## 16  14 2018-06-05 0.6570792
-## 17  46 2018-07-15 0.5647306
-## 18  43 2018-06-30 0.5443495
-## 19  64 2018-07-10 0.2003334
-## 20  35 2018-05-21 0.8774093
-## 21  50 2018-06-05 0.8734228
-## 22 100 2018-05-26 0.7307033
-## 23  79 2018-05-21 0.8753413
-## 24  69 2018-07-05 0.2435758
-## 25  49 2018-08-04 0.1427572
-## 26  32 2018-06-30 0.7951050
-## 27  77 2018-06-30 0.3672425
-## 28  71 2018-07-10 0.1682516
-## 29   9 2018-06-25 0.7205636
-## 30  59 2018-07-15 0.3337671
-## 31  28 2018-07-10 0.2105908
-## 32  81 2018-06-25 0.5282231
-## 33  63 2018-07-30 0.1276284
-## 34  89 2018-07-05 0.2526586
-## 35  84 2018-07-30 0.2208275
-## 36  25 2018-07-05 0.5268871
-## 37  74 2018-07-25 0.1376965
-## 38  94 2018-07-25 0.1932389
-## 39  19 2018-09-18 0.1645102
-## 40  73 2018-08-04 0.1692308
-## 41   2 2018-07-05 0.3225485
-## 42  37 2018-07-25 0.1952763
-## 43  26 2018-07-15 0.1856209
-## 44  36 2018-07-15 0.2071611
-## 45  58 2018-07-30 0.1780180
-## 46   4 2018-08-19 0.1471802
-## 47  27 2018-07-30 0.3617021
-## 48  17 2018-07-25 0.2251553
-## 49   7 2018-08-09 0.5504172
-## 50  12 2018-09-18 0.1460348</code></pre>
+## 1   59 2018-05-06 0.8400395
+## 2   11 2018-05-21 0.9251531
+## 3   40 2018-05-21 0.8567150
+## 4    6 2018-05-11 0.8954530
+## 5   49 2018-06-25 0.4926108
+## 6   45 2018-07-10 0.2454473
+## 7   61 2018-06-30 0.6845111
+## 8   10 2018-06-30 0.3199060
+## 9   72 2018-07-15 0.2299230
+## 10  55 2018-06-05 0.6982809
+## 11  26 2018-07-15 0.2339880
+## 12   1 2018-05-26 0.8159437
+## 13  86 2018-06-30 0.3837580
+## 14   5 2018-07-05 0.3259259
+## 15  95 2018-08-19 0.4900243
+## 16  75 2018-08-09 0.1328333
+## 17  28 2018-06-25 0.6762503
+## 18  24 2018-06-05 0.7050465
+## 19  50 2018-07-15 0.1948677
+## 20  90 2018-08-14 0.1112782
+## 21  47 2018-07-25 0.2321518
+## 22  69 2018-07-05 0.6953368
+## 23  33 2018-06-25 0.6020202
+## 24   7 2018-07-15 0.2767469
+## 25  63 2018-07-15 0.2311416
+## 26   3 2018-06-05 0.6657963
+## 27  12 2018-08-19 0.1945780
+## 28  48 2018-07-20 0.1244323
+## 29  21 2018-06-30 0.4771399
+## 30  25 2018-06-30 0.4945055
+## 31  58 2018-07-15 0.1320587
+## 32  38 2018-07-15 0.2028777
+## 33  35 2018-07-25 0.2218453
+## 34  85 2018-06-05 0.8156192
+## 35  89 2018-07-25 0.2615385
+## 36  94 2018-09-03 0.5734682
+## 37  97 2018-09-18 0.6500899
+## 38  34 2018-08-19 0.1534307
+## 39  83 2018-08-14 0.1389144
+## 40  84 2018-07-15 0.3922215
+## 41  23 2018-08-04 0.1628106
+## 42  98 2018-07-05 0.5445732
+## 43  37 2018-09-18 0.3810790
+## 44   4 2018-08-14 0.1573222
+## 45  73 2018-08-14 0.2551469
+## 46  39 2018-07-30 0.1279373
+## 47  78 2018-07-15 0.2071611
+## 48  57 2018-08-14 0.1460849</code></pre>
 </div>
 </div>
 <p><code>extract_geom()</code> drops any pixels with missing values only. Hence, if a feature is outside the extent of the data cube, or all pixels of a feature are NA due to clouds or unavailability of images, these pixels will not be included in the result. In contrast, if the input features contain overlapping geometries, pixels may be included several times (with different values in the FID column).</p>
 </section>
 <section id="combine-results-with-geometries" class="level2">
 <h2 class="anchored" data-anchor-id="combine-results-with-geometries">6. Combine results with geometries</h2>
-<p>To combine the extracted data cube values with the original sf objects including the geometries, the merge() function can be used. merge() performs table join operations on common columns (e.g.&nbsp;IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e.&nbsp;rows with FIDs that only exist in one table will be dropped. Alternatively, we can set all.x=TRUE to make sure that our result contains all features from the original dataset (left outer join).</p>
+<p>To combine the extracted data cube values with the original sf object with geometries, the <code>merge()</code> function can be used. <code>merge()</code> performs table join operations on common columns (e.g.&nbsp;IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e.&nbsp;rows with FIDs that only exist in one table will be dropped. Alternatively, we can set <code>all.x=TRUE</code> to make sure that our result contains all features from the original dataset (left outer join).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">=</span> training_sites</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">$</span>FID <span class="ot">=</span> <span class="fu">rownames</span>(sf)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(sf, ndvi_obs, <span class="at">by =</span> <span class="st">"FID"</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>df</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(df[,<span class="st">"NDVI"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">=</span> training_sites</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">$</span>FID <span class="ot">=</span> <span class="fu">rownames</span>(sf)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(sf, ndvi_obs, <span class="at">by =</span> <span class="st">"FID"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>df</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(df[,<span class="st">"NDVI"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex03_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## Simple feature collection with 50 features and 5 fields
+<pre><code>## Simple feature collection with 48 features and 5 fields
 ## Geometry type: POINT
 ## Dimension:     XY
-## Bounding box:  xmin: 6.208992 ymin: 48.4182 xmax: 13.53252 ymax: 54.39755
+## Bounding box:  xmin: 7.911385 ymin: 48.00758 xmax: 14.90914 ymax: 54.5975
 ## Geodetic CRS:  WGS 84
 ## First 10 features:
 ##    FID LC1          t       time      NDVI                  geometry
-## 1  100 B11 2018-05-28 2018-05-26 0.7307033 POINT (12.65453 51.32266)
-## 2   12 B11 2018-09-18 2018-09-18 0.1460348 POINT (9.695081 51.87378)
-## 3   14 B11 2018-06-06 2018-06-05 0.6570792 POINT (9.488548 49.57162)
-## 4   17 B11 2018-07-27 2018-07-25 0.2251553   POINT (13.002 54.38994)
-## 5   19 B11 2018-09-20 2018-09-18 0.1645102 POINT (10.59793 52.07039)
-## 6    2 B11 2018-07-09 2018-07-05 0.3225485 POINT (6.389366 51.06301)
-## 7   25 B11 2018-07-05 2018-07-05 0.5268871 POINT (6.208992 50.82327)
-## 8   26 B11 2018-07-18 2018-07-15 0.1856209 POINT (12.85069 53.53028)
-## 9   27 B11 2018-07-30 2018-07-30 0.3617021 POINT (12.42257 53.43167)
-## 10  28 B11 2018-07-12 2018-07-10 0.2105908  POINT (13.1101 53.77573)</code></pre>
+## 1    1 B11 2018-05-28 2018-05-26 0.8159437 POINT (14.90914 51.17738)
+## 2   10 B11 2018-07-04 2018-06-30 0.3199060 POINT (8.423892 52.51083)
+## 3   11 B11 2018-05-24 2018-05-21 0.9251531 POINT (10.41534 54.37171)
+## 4   12 B11 2018-08-23 2018-08-19 0.1945780 POINT (11.31585 52.67577)
+## 5   21 B11 2018-07-04 2018-06-30 0.4771399 POINT (12.65786 54.30789)
+## 6   23 B11 2018-08-04 2018-08-04 0.1628106 POINT (8.833251 51.50885)
+## 7   24 B11 2018-06-08 2018-06-05 0.7050465  POINT (10.76221 53.1479)
+## 8   25 B11 2018-07-02 2018-06-30 0.4945055 POINT (11.37654 53.66373)
+## 9   26 B11 2018-07-19 2018-07-15 0.2339880 POINT (10.74198 51.96172)
+## 10  28 B11 2018-06-28 2018-06-25 0.6762503 POINT (9.173378 51.81735)</code></pre>
 </div>
 </div>
 </section>
 <section id="extract-complete-time-series" class="level2">
 <h2 class="anchored" data-anchor-id="extract-complete-time-series">7. Extract complete time series</h2>
-<p>If we skip the <code>time_column</code> argument in <code>extract_geom()</code> we can extract complete time series at irregular points. Below, we use the same locations but extract complete time series, which we plot using the <code>ggplot2</code> package.</p>
+<p>If we skip the <code>time_column</code> argument in <code>extract_geom()</code>, we can extract complete time series at irregular points. Below, we use the same locations but extract complete time series, which we afterwards plot using the <code>ggplot2</code> package <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">Wickham 2016</a>)</span>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wheat_timeseries)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wheat_timeseries)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex03_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## [1] 1426</code></pre>
+<pre><code>## [1] 1425</code></pre>
 </div>
 </div>
 
 
 <!-- -->
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-sf" class="csl-entry" role="doc-biblioentry">
+Pebesma, E. (2018), <span>“<span class="nocase">Simple Features for R: Standardized Support for Spatial Vector Data</span>,”</span> <em><span>The R Journal</span></em>, 10, 439–446. <a href="https://doi.org/10.32614/RJ-2018-009">https://doi.org/10.32614/RJ-2018-009</a>.
+</div>
+<div id="ref-ggplot2" class="csl-entry" role="doc-biblioentry">
+Wickham, H. (2016), <em><a href="https://ggplot2.tidyverse.org">ggplot2: Elegant graphics for data analysis</a></em>, Springer-Verlag New York.
+</div>
+<div id="ref-dplyr" class="csl-entry" role="doc-biblioentry">
+Wickham, H., François, R., Henry, L., and Müller, K. (2022), <em><a href="https://CRAN.R-project.org/package=dplyr">Dplyr: A grammar of data manipulation</a></em>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -617,182 +648,177 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb15" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Example 3: Extracting training data for machine-learning applications"</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span><span class="co"> </span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">  eval: true # local</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: config</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: true</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(<span class="st">"config.R"</span>)) {</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">source</span>(<span class="st">"config.R"</span>)</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="fu">gdalcubes_options</span>(<span class="at">default_chunksize =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">768</span>,<span class="dv">768</span>))</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>*Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction</span></span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from provided labeled points. Therefore, we will use primary data from the <span class="co">[</span><span class="ot">European Land Use and Coverage Area frame Survey (LUCAS)</span><span class="co">](https://ec.europa.eu/eurostat/web/lucas/)</span> containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see <span class="co">[</span><span class="ot">here</span><span class="co">](https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018)</span>). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Load and preprocess samples</span></span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>First, we need to convert our CSV table into a spatially referenced sf object. </span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>After reading the CSV files, we remove rows without valid coordinates and create an sf object using <span class="in">`st_as_sf()`</span> by specifying the names of latitude and longitude columns.</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/DE_2018_20200213.CSV"</span>)</span>
-<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> x[<span class="sc">-</span><span class="fu">which</span>(<span class="fu">is.na</span>(x<span class="sc">$</span>TH_LAT) <span class="sc">|</span> <span class="fu">is.na</span>(x<span class="sc">$</span>TH_LONG)),]</span>
-<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">st_as_sf</span>(x, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"TH_LONG"</span>, <span class="st">"TH_LAT"</span>), <span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>x<span class="sc">$</span>t <span class="ot">=</span> <span class="fu">as.Date</span>(x<span class="sc">$</span>SURVEY_DATE, <span class="at">format =</span> <span class="st">"%d/%m/%y"</span>) </span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(x[,<span class="fu">c</span>(<span class="st">"LC1"</span>,<span class="st">"t"</span>)])</span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(x)</span>
-<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>The LC1 column contains codes for primary land cover types of the samples. We are interested in _common wheat_, which is decoded as B11. </span>
-<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>We now use the <span class="in">`dplyr`</span> package to sample 100 corresponding observations and afterwards plot the result.</span>
-<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">startsWith</span>(x<span class="sc">$</span>LC1, <span class="fu">c</span>(<span class="st">"B11"</span>)), <span class="fu">c</span>(<span class="st">"LC1"</span>,<span class="st">"t"</span>)] <span class="sc">|&gt;</span></span>
-<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">100</span>) <span class="ot">-&gt;</span> training_sites</span>
-<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(training_sites[,<span class="st">"LC1"</span>])</span>
-<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a>As expected from random sampling, points are scattared all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.</span>
-<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Query related images from STAC</span></span>
-<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a>As in the previous examples, we calculate the bounding box, perform a STAC query to find relevant images and afterwards create a gdalcubes image collection object. Since our point samples cover a large area and time range, this may include quite a lot of images and the STAC request might take some time. To avoid repeating these steps. we simply store the resulting image collection as a file and reload it when needed. </span>
-<span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a>bbox <span class="ot">=</span> <span class="fu">st_bbox</span>(training_sites) </span>
-<span id="cb15-74"><a href="#cb15-74" aria-hidden="true" tabindex="-1"></a>bbox</span>
-<span id="cb15-75"><a href="#cb15-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-76"><a href="#cb15-76" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstac)</span>
-<span id="cb15-77"><a href="#cb15-77" aria-hidden="true" tabindex="-1"></a>s <span class="ot">=</span> <span class="fu">stac</span>(<span class="st">"https://earth-search.aws.element84.com/v0"</span>)</span>
-<span id="cb15-78"><a href="#cb15-78" aria-hidden="true" tabindex="-1"></a>items <span class="ot">=</span> s <span class="sc">|&gt;</span></span>
-<span id="cb15-79"><a href="#cb15-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stac_search</span>(<span class="at">collections =</span> <span class="st">"sentinel-s2-l2a-cogs"</span>,</span>
-<span id="cb15-80"><a href="#cb15-80" aria-hidden="true" tabindex="-1"></a>              <span class="at">bbox =</span> <span class="fu">c</span>(bbox[<span class="st">"xmin"</span>],bbox[<span class="st">"ymin"</span>],</span>
-<span id="cb15-81"><a href="#cb15-81" aria-hidden="true" tabindex="-1"></a>                       bbox[<span class="st">"xmax"</span>],bbox[<span class="st">"ymax"</span>]), </span>
-<span id="cb15-82"><a href="#cb15-82" aria-hidden="true" tabindex="-1"></a>              <span class="at">datetime =</span> <span class="st">"2018-04-01/2018-09-30"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb15-83"><a href="#cb15-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">post_request</span>() <span class="sc">|&gt;</span> <span class="fu">items_fetch</span>(<span class="at">progress =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-84"><a href="#cb15-84" aria-hidden="true" tabindex="-1"></a>items</span>
-<span id="cb15-85"><a href="#cb15-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-86"><a href="#cb15-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-87"><a href="#cb15-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Convert STAC results to a gdalcubes image collection</span></span>
-<span id="cb15-90"><a href="#cb15-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-91"><a href="#cb15-91" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gdalcubes)</span>
-<span id="cb15-92"><a href="#cb15-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-93"><a href="#cb15-93" aria-hidden="true" tabindex="-1"></a><span class="co"># REMOVE DUPLICATE STAC ITEMS!</span></span>
-<span id="cb15-94"><a href="#cb15-94" aria-hidden="true" tabindex="-1"></a>ids <span class="ot">=</span> <span class="fu">unlist</span>(<span class="fu">lapply</span>(items<span class="sc">$</span>features, <span class="cf">function</span>(x) {x<span class="sc">$</span>id}))</span>
-<span id="cb15-95"><a href="#cb15-95" aria-hidden="true" tabindex="-1"></a>items<span class="sc">$</span>features_unique <span class="ot">=</span> items<span class="sc">$</span>features[<span class="sc">-</span><span class="fu">which</span>((<span class="fu">duplicated</span>(ids)))]</span>
-<span id="cb15-96"><a href="#cb15-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-97"><a href="#cb15-97" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> </span>
-<span id="cb15-98"><a href="#cb15-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stac_image_collection</span>(items<span class="sc">$</span>features_unique, <span class="at">asset_names =</span> <span class="fu">c</span>(<span class="st">"B02"</span>,<span class="st">"B03"</span>,<span class="st">"B04"</span>,<span class="st">"B08"</span>,<span class="st">"SCL"</span>),</span>
-<span id="cb15-99"><a href="#cb15-99" aria-hidden="true" tabindex="-1"></a>                        <span class="at">property_filter =</span> <span class="cf">function</span>(x) {x[[<span class="st">"eo:cloud_cover"</span>]] <span class="sc">&lt;</span> <span class="dv">10</span>},</span>
-<span id="cb15-100"><a href="#cb15-100" aria-hidden="true" tabindex="-1"></a>                        <span class="at">out_file =</span> <span class="st">"S2_de_2018.db"</span>)</span>
-<span id="cb15-101"><a href="#cb15-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-102"><a href="#cb15-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-103"><a href="#cb15-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-104"><a href="#cb15-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-105"><a href="#cb15-105" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Create an NDVI data cube</span></span>
-<span id="cb15-106"><a href="#cb15-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-107"><a href="#cb15-107" aria-hidden="true" tabindex="-1"></a>Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively.</span>
-<span id="cb15-108"><a href="#cb15-108" aria-hidden="true" tabindex="-1"></a>We also calculate the NDVI, which we would like to use as "explanatory" variable. </span>
-<span id="cb15-109"><a href="#cb15-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-110"><a href="#cb15-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-113"><a href="#cb15-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-114"><a href="#cb15-114" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> <span class="fu">image_collection</span>(<span class="st">"S2_de_2018.db"</span>)</span>
-<span id="cb15-115"><a href="#cb15-115" aria-hidden="true" tabindex="-1"></a>s2_collection</span>
-<span id="cb15-116"><a href="#cb15-116" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="fu">cube_view</span>(<span class="at">extent=</span>s2_collection, <span class="at">dt=</span><span class="st">"P5D"</span>, <span class="at">dx=</span><span class="dv">10</span>, <span class="at">dy=</span><span class="dv">10</span>, <span class="at">srs=</span><span class="st">"EPSG:3857"</span>, </span>
-<span id="cb15-117"><a href="#cb15-117" aria-hidden="true" tabindex="-1"></a>              <span class="at">aggregation =</span> <span class="st">"median"</span>, <span class="at">resampling =</span> <span class="st">"nearest"</span>)</span>
-<span id="cb15-118"><a href="#cb15-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-119"><a href="#cb15-119" aria-hidden="true" tabindex="-1"></a>S2.mask <span class="ot">=</span> <span class="fu">image_mask</span>(<span class="st">"SCL"</span>, <span class="at">values =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">9</span>))</span>
-<span id="cb15-120"><a href="#cb15-120" aria-hidden="true" tabindex="-1"></a><span class="fu">raster_cube</span>(s2_collection, v, <span class="at">mask =</span> S2.mask) <span class="sc">|&gt;</span> </span>
-<span id="cb15-121"><a href="#cb15-121" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_bands</span>(<span class="fu">c</span>(<span class="st">"B04"</span>,<span class="st">"B08"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb15-122"><a href="#cb15-122" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply_pixel</span>(<span class="st">"(B08-B04)/(B08+B04)"</span>, <span class="st">"NDVI"</span>) <span class="ot">-&gt;</span> s2_cube</span>
-<span id="cb15-123"><a href="#cb15-123" aria-hidden="true" tabindex="-1"></a>s2_cube</span>
-<span id="cb15-124"><a href="#cb15-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-125"><a href="#cb15-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-126"><a href="#cb15-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-127"><a href="#cb15-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-128"><a href="#cb15-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-129"><a href="#cb15-129" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Extract NDVI values from point samples</span></span>
-<span id="cb15-130"><a href="#cb15-130" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-131"><a href="#cb15-131" aria-hidden="true" tabindex="-1"></a>Now, we can extract values from the cube using the <span class="in">`extract_geom()`</span> function. Given a data cube and any simple feature geometries as an sf object, the function can be used as a general method to extract data cube pixel values at irregular locations. <span class="in">`extract_geom()`</span> returns a <span class="in">`data.frame`</span> with columns for feature identifiers (FIDs, often row numbers of the <span class="in">`sf`</span> object), time, and bands / variables of the data cube. Each row represents the data cube values of one pixel relating to the feature given by the FID column. For anything other than simple point geometries (e.g. POLYGON, LINESTRING, MULTIPOINT, and similar), the result may contain multiple rows per feature. In these cases, it is possible to apply an aggregation function to compute mean, median or similar summary statistics over features.</span>
-<span id="cb15-132"><a href="#cb15-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-135"><a href="#cb15-135" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-136"><a href="#cb15-136" aria-hidden="true" tabindex="-1"></a>ndvi_obs <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites, <span class="at">time_column =</span> <span class="st">"t"</span>)</span>
-<span id="cb15-137"><a href="#cb15-137" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(ndvi_obs)</span>
-<span id="cb15-138"><a href="#cb15-138" aria-hidden="true" tabindex="-1"></a>ndvi_obs</span>
-<span id="cb15-139"><a href="#cb15-139" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-140"><a href="#cb15-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-141"><a href="#cb15-141" aria-hidden="true" tabindex="-1"></a><span class="in">`extract_geom()`</span> drops any pixels with missing values only. Hence, if a feature is outside the extent of the data cube, or all pixels of a feature are NA due to clouds or unavailability of images, these pixels will not be included in the result. In contrast, if the input features contain overlapping geometries, pixels may be included several times (with different values in the FID column).</span>
-<span id="cb15-142"><a href="#cb15-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-143"><a href="#cb15-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-144"><a href="#cb15-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-145"><a href="#cb15-145" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Combine results with geometries</span></span>
-<span id="cb15-146"><a href="#cb15-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-147"><a href="#cb15-147" aria-hidden="true" tabindex="-1"></a>To combine the extracted data cube values with the original sf objects including the geometries, the merge() function can be used. merge() performs table join operations on common columns (e.g. IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e. rows with FIDs that only exist in one table will be dropped. Alternatively, we can set all.x=TRUE to make sure that our result contains all features from the original dataset (left outer join).</span>
-<span id="cb15-148"><a href="#cb15-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-151"><a href="#cb15-151" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-152"><a href="#cb15-152" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">=</span> training_sites</span>
-<span id="cb15-153"><a href="#cb15-153" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">$</span>FID <span class="ot">=</span> <span class="fu">rownames</span>(sf)</span>
-<span id="cb15-154"><a href="#cb15-154" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(sf, ndvi_obs, <span class="at">by =</span> <span class="st">"FID"</span>)</span>
-<span id="cb15-155"><a href="#cb15-155" aria-hidden="true" tabindex="-1"></a>df</span>
-<span id="cb15-156"><a href="#cb15-156" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(df[,<span class="st">"NDVI"</span>])</span>
-<span id="cb15-157"><a href="#cb15-157" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-158"><a href="#cb15-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-159"><a href="#cb15-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-160"><a href="#cb15-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Extract complete time series</span></span>
-<span id="cb15-161"><a href="#cb15-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-162"><a href="#cb15-162" aria-hidden="true" tabindex="-1"></a>If we skip the <span class="in">`time_column`</span> argument in <span class="in">`extract_geom()`</span> we can extract complete time series at irregular points. </span>
-<span id="cb15-163"><a href="#cb15-163" aria-hidden="true" tabindex="-1"></a>Below, we use the same locations but extract complete time series, which we plot using the <span class="in">`ggplot2`</span> package.</span>
-<span id="cb15-164"><a href="#cb15-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-167"><a href="#cb15-167" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb15-168"><a href="#cb15-168" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites)</span>
-<span id="cb15-169"><a href="#cb15-169" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wheat_timeseries)</span>
-<span id="cb15-170"><a href="#cb15-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-171"><a href="#cb15-171" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb15-172"><a href="#cb15-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-173"><a href="#cb15-173" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
-<span id="cb15-174"><a href="#cb15-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
-<span id="cb15-175"><a href="#cb15-175" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
-<span id="cb15-176"><a href="#cb15-176" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
-<span id="cb15-177"><a href="#cb15-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span>
-<span id="cb15-178"><a href="#cb15-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-179"><a href="#cb15-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-180"><a href="#cb15-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-181"><a href="#cb15-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-182"><a href="#cb15-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-183"><a href="#cb15-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-184"><a href="#cb15-184" aria-hidden="true" tabindex="-1"></a></span>
+<div class="sourceCode" id="cb17" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Example 3: Extracting training data for machine-learning applications"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span><span class="co"> </span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">  eval: true # local</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: config</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: true</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(<span class="st">"config.R"</span>)) {</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">source</span>(<span class="st">"config.R"</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="fu">gdalcubes_options</span>(<span class="at">default_chunksize =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">768</span>,<span class="dv">768</span>))</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>*Please notice that code chunks in this document are meant to be executed on an Amazon Web Services (AWS) machine in region `us-west-2` (Oregon). Examples have been selected to yield computation times acceptable for a live demonstration. Please feel free to apply on larger areas and/or using a higher spatial resolution.*</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>Machine learning models for land cover classification, change detection, spatiotemporal prediction, and similar tasks in most cases need a large number of observations for training. In this example, we will extract satellite observations from labeled points. Therefore, we will use primary data from the <span class="co">[</span><span class="ot">European Land Use and Coverage Area frame Survey (LUCAS)</span><span class="co">](https://ec.europa.eu/eurostat/web/lucas/)</span> containing ground-based land cover point samples from 2018. The data can be downloaded as country-wise CSV files (see <span class="co">[</span><span class="ot">here</span><span class="co">](https://ec.europa.eu/eurostat/de/web/lucas/data/primary-data/2018)</span>). We will use observations over Germany and extract Sentinel-2 NDVI observations of common wheat samples.</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Load and preprocess samples</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>First, we need to convert our CSV table into a spatially referenced sf <span class="co">[</span><span class="ot">@sf</span><span class="co">]</span> object. </span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>After reading the CSV files, we remove rows without valid coordinates and create an sf object using <span class="in">`st_as_sf()`</span> by specifying the names of latitude and longitude columns.</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/DE_2018_20200213.CSV"</span>) <span class="co"># downloaded from https://ec.europa.eu/eurostat/cache/lucas/DE_2018_20200213.CSV</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> x[<span class="sc">-</span><span class="fu">which</span>(<span class="fu">is.na</span>(x<span class="sc">$</span>TH_LAT) <span class="sc">|</span> <span class="fu">is.na</span>(x<span class="sc">$</span>TH_LONG)),]</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="fu">st_as_sf</span>(x, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"TH_LONG"</span>, <span class="st">"TH_LAT"</span>), <span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>x<span class="sc">$</span>t <span class="ot">=</span> <span class="fu">as.Date</span>(x<span class="sc">$</span>SURVEY_DATE, <span class="at">format =</span> <span class="st">"%d/%m/%y"</span>) </span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(x[,<span class="fu">c</span>(<span class="st">"LC1"</span>,<span class="st">"t"</span>)])</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(x)</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>The LC1 column contains codes for primary land cover types of the samples. We are interested in _common wheat_, which is decoded as B11. </span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>We now use the <span class="in">`dplyr`</span> package <span class="co">[</span><span class="ot">@dplyr</span><span class="co">]</span> to sample 100 corresponding observations and afterwards plot the result.</span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">startsWith</span>(x<span class="sc">$</span>LC1, <span class="fu">c</span>(<span class="st">"B11"</span>)), <span class="fu">c</span>(<span class="st">"LC1"</span>,<span class="st">"t"</span>)] <span class="sc">|&gt;</span></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">100</span>) <span class="ot">-&gt;</span> training_sites</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(training_sites[,<span class="st">"LC1"</span>])</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a>As expected from random sampling, points are scattered all over Germany, i.e., we need to load a lot of Sentinel-2 images though only extracting single values.</span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Query related images from STAC</span></span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a>As in the previous examples, we calculate the bounding box, perform a STAC query to find relevant images and afterwards create a gdalcubes image collection object. Since our point samples cover a large area and time range, this may include quite a lot of images and the STAC request might take some time. To avoid repeating these steps. we simply store the resulting image collection as a file and reload it when needed. </span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-72"><a href="#cb17-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-73"><a href="#cb17-73" aria-hidden="true" tabindex="-1"></a>bbox <span class="ot">=</span> <span class="fu">st_bbox</span>(training_sites) </span>
+<span id="cb17-74"><a href="#cb17-74" aria-hidden="true" tabindex="-1"></a>bbox</span>
+<span id="cb17-75"><a href="#cb17-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-76"><a href="#cb17-76" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstac)</span>
+<span id="cb17-77"><a href="#cb17-77" aria-hidden="true" tabindex="-1"></a>s <span class="ot">=</span> <span class="fu">stac</span>(<span class="st">"https://earth-search.aws.element84.com/v0"</span>)</span>
+<span id="cb17-78"><a href="#cb17-78" aria-hidden="true" tabindex="-1"></a>items <span class="ot">=</span> s <span class="sc">|&gt;</span></span>
+<span id="cb17-79"><a href="#cb17-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stac_search</span>(<span class="at">collections =</span> <span class="st">"sentinel-s2-l2a-cogs"</span>,</span>
+<span id="cb17-80"><a href="#cb17-80" aria-hidden="true" tabindex="-1"></a>              <span class="at">bbox =</span> <span class="fu">c</span>(bbox[<span class="st">"xmin"</span>],bbox[<span class="st">"ymin"</span>],</span>
+<span id="cb17-81"><a href="#cb17-81" aria-hidden="true" tabindex="-1"></a>                       bbox[<span class="st">"xmax"</span>],bbox[<span class="st">"ymax"</span>]), </span>
+<span id="cb17-82"><a href="#cb17-82" aria-hidden="true" tabindex="-1"></a>              <span class="at">datetime =</span> <span class="st">"2018-04-01/2018-09-30"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-83"><a href="#cb17-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">post_request</span>() <span class="sc">|&gt;</span> <span class="fu">items_fetch</span>(<span class="at">progress =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-84"><a href="#cb17-84" aria-hidden="true" tabindex="-1"></a>items</span>
+<span id="cb17-85"><a href="#cb17-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-86"><a href="#cb17-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-87"><a href="#cb17-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Convert STAC results to a gdalcubes image collection</span></span>
+<span id="cb17-90"><a href="#cb17-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-91"><a href="#cb17-91" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gdalcubes)</span>
+<span id="cb17-92"><a href="#cb17-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-93"><a href="#cb17-93" aria-hidden="true" tabindex="-1"></a><span class="co"># REMOVE DUPLICATE STAC ITEMS!</span></span>
+<span id="cb17-94"><a href="#cb17-94" aria-hidden="true" tabindex="-1"></a>ids <span class="ot">=</span> <span class="fu">unlist</span>(<span class="fu">lapply</span>(items<span class="sc">$</span>features, <span class="cf">function</span>(x) {x<span class="sc">$</span>id}))</span>
+<span id="cb17-95"><a href="#cb17-95" aria-hidden="true" tabindex="-1"></a>items<span class="sc">$</span>features_unique <span class="ot">=</span> items<span class="sc">$</span>features[<span class="sc">-</span><span class="fu">which</span>((<span class="fu">duplicated</span>(ids)))]</span>
+<span id="cb17-96"><a href="#cb17-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-97"><a href="#cb17-97" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> </span>
+<span id="cb17-98"><a href="#cb17-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stac_image_collection</span>(items<span class="sc">$</span>features_unique, <span class="at">asset_names =</span> <span class="fu">c</span>(<span class="st">"B02"</span>,<span class="st">"B03"</span>,<span class="st">"B04"</span>,<span class="st">"B08"</span>,<span class="st">"SCL"</span>),</span>
+<span id="cb17-99"><a href="#cb17-99" aria-hidden="true" tabindex="-1"></a>                        <span class="at">property_filter =</span> <span class="cf">function</span>(x) {x[[<span class="st">"eo:cloud_cover"</span>]] <span class="sc">&lt;</span> <span class="dv">10</span>},</span>
+<span id="cb17-100"><a href="#cb17-100" aria-hidden="true" tabindex="-1"></a>                        <span class="at">out_file =</span> <span class="st">"S2_de_2018.db"</span>)</span>
+<span id="cb17-101"><a href="#cb17-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-102"><a href="#cb17-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-103"><a href="#cb17-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-104"><a href="#cb17-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-105"><a href="#cb17-105" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Create an NDVI data cube</span></span>
+<span id="cb17-106"><a href="#cb17-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-107"><a href="#cb17-107" aria-hidden="true" tabindex="-1"></a>Now, we (re)load the image collection, and define a rather large data cube at 10m / five days spatial and temporal resolution respectively. We also calculate the NDVI, which we would like to use as "explanatory" variable. </span>
+<span id="cb17-108"><a href="#cb17-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-109"><a href="#cb17-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-112"><a href="#cb17-112" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-113"><a href="#cb17-113" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> <span class="fu">image_collection</span>(<span class="st">"S2_de_2018.db"</span>)</span>
+<span id="cb17-114"><a href="#cb17-114" aria-hidden="true" tabindex="-1"></a>s2_collection</span>
+<span id="cb17-115"><a href="#cb17-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-116"><a href="#cb17-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-119"><a href="#cb17-119" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-120"><a href="#cb17-120" aria-hidden="true" tabindex="-1"></a>v <span class="ot">=</span> <span class="fu">cube_view</span>(<span class="at">extent=</span>s2_collection, <span class="at">dt=</span><span class="st">"P5D"</span>, <span class="at">dx=</span><span class="dv">10</span>, <span class="at">dy=</span><span class="dv">10</span>, <span class="at">srs=</span><span class="st">"EPSG:3857"</span>, </span>
+<span id="cb17-121"><a href="#cb17-121" aria-hidden="true" tabindex="-1"></a>              <span class="at">aggregation =</span> <span class="st">"median"</span>, <span class="at">resampling =</span> <span class="st">"nearest"</span>)</span>
+<span id="cb17-122"><a href="#cb17-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-123"><a href="#cb17-123" aria-hidden="true" tabindex="-1"></a>S2.mask <span class="ot">=</span> <span class="fu">image_mask</span>(<span class="st">"SCL"</span>, <span class="at">values =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">9</span>))</span>
+<span id="cb17-124"><a href="#cb17-124" aria-hidden="true" tabindex="-1"></a><span class="fu">raster_cube</span>(s2_collection, v, <span class="at">mask =</span> S2.mask) <span class="sc">|&gt;</span> </span>
+<span id="cb17-125"><a href="#cb17-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_bands</span>(<span class="fu">c</span>(<span class="st">"B04"</span>,<span class="st">"B08"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb17-126"><a href="#cb17-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply_pixel</span>(<span class="st">"(B08-B04)/(B08+B04)"</span>, <span class="st">"NDVI"</span>) <span class="ot">-&gt;</span> s2_cube</span>
+<span id="cb17-127"><a href="#cb17-127" aria-hidden="true" tabindex="-1"></a>s2_cube</span>
+<span id="cb17-128"><a href="#cb17-128" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-129"><a href="#cb17-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-130"><a href="#cb17-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-131"><a href="#cb17-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-132"><a href="#cb17-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-133"><a href="#cb17-133" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Extract NDVI values from point samples</span></span>
+<span id="cb17-134"><a href="#cb17-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-135"><a href="#cb17-135" aria-hidden="true" tabindex="-1"></a>Now, we can extract values from the cube using the <span class="in">`extract_geom()`</span> function. Given a data cube and any simple feature geometries as an sf object, the function can be used as a general method to extract data cube pixel values at irregular locations. <span class="in">`extract_geom()`</span> returns a <span class="in">`data.frame`</span> with columns for feature identifiers (FIDs, often row numbers of the <span class="in">`sf`</span> object), time, and bands / variables of the data cube. Each row represents the data cube values of one pixel relating to the feature given by the FID column. For anything other than simple point geometries (e.g. POLYGON, LINESTRING, MULTIPOINT, and similar), the result may contain multiple rows per feature. In these cases, it is possible to apply an aggregation function to compute mean, median or similar summary statistics over features.</span>
+<span id="cb17-136"><a href="#cb17-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-139"><a href="#cb17-139" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-140"><a href="#cb17-140" aria-hidden="true" tabindex="-1"></a>ndvi_obs <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites, <span class="at">time_column =</span> <span class="st">"t"</span>)</span>
+<span id="cb17-141"><a href="#cb17-141" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(ndvi_obs)</span>
+<span id="cb17-142"><a href="#cb17-142" aria-hidden="true" tabindex="-1"></a>ndvi_obs</span>
+<span id="cb17-143"><a href="#cb17-143" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-144"><a href="#cb17-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-145"><a href="#cb17-145" aria-hidden="true" tabindex="-1"></a><span class="in">`extract_geom()`</span> drops any pixels with missing values only. Hence, if a feature is outside the extent of the data cube, or all pixels of a feature are NA due to clouds or unavailability of images, these pixels will not be included in the result. In contrast, if the input features contain overlapping geometries, pixels may be included several times (with different values in the FID column).</span>
+<span id="cb17-146"><a href="#cb17-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-147"><a href="#cb17-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-148"><a href="#cb17-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-149"><a href="#cb17-149" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Combine results with geometries</span></span>
+<span id="cb17-150"><a href="#cb17-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-151"><a href="#cb17-151" aria-hidden="true" tabindex="-1"></a>To combine the extracted data cube values with the original sf object with geometries, the <span class="in">`merge()`</span> function can be used. <span class="in">`merge()`</span> performs table join operations on common columns (e.g. IDs). We therefore first need to add an FID column to the features and then join both tables by their FID columns. Notice that by default, this is performing an inner join, i.e. rows with FIDs that only exist in one table will be dropped. Alternatively, we can set <span class="in">`all.x=TRUE`</span> to make sure that our result contains all features from the original dataset (left outer join).</span>
+<span id="cb17-152"><a href="#cb17-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-155"><a href="#cb17-155" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-156"><a href="#cb17-156" aria-hidden="true" tabindex="-1"></a>sf <span class="ot">=</span> training_sites</span>
+<span id="cb17-157"><a href="#cb17-157" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">$</span>FID <span class="ot">=</span> <span class="fu">rownames</span>(sf)</span>
+<span id="cb17-158"><a href="#cb17-158" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(sf, ndvi_obs, <span class="at">by =</span> <span class="st">"FID"</span>)</span>
+<span id="cb17-159"><a href="#cb17-159" aria-hidden="true" tabindex="-1"></a>df</span>
+<span id="cb17-160"><a href="#cb17-160" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(df[,<span class="st">"NDVI"</span>])</span>
+<span id="cb17-161"><a href="#cb17-161" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-162"><a href="#cb17-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-163"><a href="#cb17-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-164"><a href="#cb17-164" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Extract complete time series</span></span>
+<span id="cb17-165"><a href="#cb17-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-166"><a href="#cb17-166" aria-hidden="true" tabindex="-1"></a>If we skip the <span class="in">`time_column`</span> argument in <span class="in">`extract_geom()`</span>, we can extract complete time series at irregular points. </span>
+<span id="cb17-167"><a href="#cb17-167" aria-hidden="true" tabindex="-1"></a>Below, we use the same locations but extract complete time series, which we afterwards plot using the <span class="in">`ggplot2`</span> package <span class="co">[</span><span class="ot">@ggplot2</span><span class="co">]</span>.</span>
+<span id="cb17-168"><a href="#cb17-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-171"><a href="#cb17-171" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb17-172"><a href="#cb17-172" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="ot">&lt;-</span> <span class="fu">extract_geom</span>(s2_cube, training_sites)</span>
+<span id="cb17-173"><a href="#cb17-173" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(wheat_timeseries)</span>
+<span id="cb17-174"><a href="#cb17-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-175"><a href="#cb17-175" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb17-176"><a href="#cb17-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-177"><a href="#cb17-177" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
+<span id="cb17-178"><a href="#cb17-178" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
+<span id="cb17-179"><a href="#cb17-179" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb17-180"><a href="#cb17-180" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
+<span id="cb17-181"><a href="#cb17-181" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span>
+<span id="cb17-182"><a href="#cb17-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb17-183"><a href="#cb17-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-184"><a href="#cb17-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-185"><a href="#cb17-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-186"><a href="#cb17-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-187"><a href="#cb17-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-188"><a href="#cb17-188" aria-hidden="true" tabindex="-1"></a></span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-      <div class="nav-footer-center">
-        <ul class="footer-items list-unstyled">
-    <li class="nav-item">
-    <a class="nav-link" href="./´#top">Top</a>
-  </li>  
-</ul>
-      </div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">

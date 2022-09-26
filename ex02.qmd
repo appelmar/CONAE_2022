@@ -21,7 +21,7 @@ gdalcubes_options(default_chunksize = c(1,150,150))
 
 ## Introduction
 
-In this example, we use [MODIS vegetation index data (MOD13A1) on AWS](https://registry.opendata.aws/modis-astraea/) to apply more complex time series analysis (trend estimation and change detection). The steps performed are very similar to the first example. However, the data is provided as in a _requester pays_ bucket, i.e., we need to pay for data requests and transfer. To do so, we need to set up an AWS IAM-user with S3reader rights and some configuration options before we can read images:
+In this example, we use [MODIS vegetation index data (MOD13A1) on AWS](https://registry.opendata.aws/modis-astraea/) to apply more complex time series analysis (trend estimation and change detection). The steps performed are very similar to the first example. However, the data is provided in a _requester pays_ bucket, i.e., we need to pay for data requests and transfer. To do so, we need to set up an AWS IAM-user with S3reader rights and some configuration options before we can read images:
 
 ```{r}
 #| eval: false
@@ -33,7 +33,7 @@ gdalcubes_set_gdal_config("AWS_REQUEST_PAYER", "requester")
 
 ## 1.  Define area of interest 
 
-Our study area is the whole country of Germany, provided as GeoPackage file (data/de.gpkg), which we can read using the `sf` package.
+Our study area is the whole country of Germany, provided as GeoPackage file (data/de.gpkg), which we can read using the `sf` package [@sf].
 
 ```{r}
 library(sf)
@@ -80,14 +80,16 @@ col
 
 ## 4. Create a data cube and perform a simple NDVI trend estimation  
 
-Next, we define the data cube geometry (1km spatial resolution), create the data cube, and apply a trend estimation (quantile regression from the `quantreg` package as a user defined function. Notice that instead of plotting our result, we simply create a netCDF file. This file can be used afterwards with most GDAL-based tools, including other R packages as well as QGIS. Alternatively, calling `write_tif()` would create a collection of GeoTIFF files. 
+Next, we define the data cube geometry (1km spatial resolution), create the data cube, and apply a trend estimation (quantile regression from the `quantreg` package [@quantreg] as a user defined function) on _yearly aggregated_ data. Notice that instead of direct plotting, we simply export the results as a netCDF file. This file can be used afterwards with most GDAL-based tools, including other R packages as well as QGIS. Alternatively, calling `write_tif()` would create GeoTIFF file(s). 
 
 ```{r}
 v = cube_view(extent = list(left = bbox["xmin"], right = bbox["xmax"], bottom = bbox["ymin"], 
               top = bbox["ymax"], t0 = "2010-01-01", t1 = "2019-12-31"), dx=1000,dy = 1000, 
               dt = "P1Y", srs = "EPSG:25832", aggregation = "median")
 v
+```
 
+```{r}
 raster_cube(col, v) |>
   select_bands("NDVI") |>
   reduce_time(names = "slope", FUN = function(x) {
@@ -107,7 +109,7 @@ raster_cube(col, v) |>
 
 ## 5. Visualize result in an interactive map
 
-Since our result is a simple single-band, single-time netCDF file, we can load it with the `terra` package and use `tmap` to create a trend map. 
+Since our result is a simple single-band, single-time netCDF file, we can load it with the `terra` package [@terra] and use `tmap` [@tmap] to create a trend map. 
 
 ```{r}
 library(tmap)
@@ -123,12 +125,14 @@ Most significant negative trends relate to some surface mining activities (and d
 
 ## 6. Run change detection
 
-Similarly, we can apply change detection methods on pixel time series. Below, we use the `bfast` package and apply `bfastmonitor()` to extract change dates and magnitudes in 2018. 
+Similarly, we can apply change detection methods on pixel time series. Below, we use the `bfast` package [@bfast] and apply `bfastmonitor()` to extract change dates and magnitudes in 2018. 
 
 ```{r}
 v = cube_view(view = v, extent = list(t0 = "2017-01-01", t1 = "2018-12-31"), dt = "P1M")
 v
+```
 
+```{r}
 raster_cube(col, v) |>
   select_bands("NDVI") |>
   reduce_time(names = c("change_date", "change_magnitude"), FUN = function(x) {
@@ -152,7 +156,7 @@ raster_cube(col, v) |>
 
 ## 7. Convert to stars and create an interative map
 
-We can now convert the result to a stars object using `st_as_stars()` and use the `tmap` package for creating interactive maps.
+We can now convert the result to a stars object [@stars] using `st_as_stars()` and use the `tmap` package for creating interactive maps.
 
 ```{r}
 #| layout-ncol: 2
