@@ -271,21 +271,21 @@ div.csl-indent {
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>items</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>##      xmin      ymin      xmax      ymax 
-##  7.911385 48.007580 14.909136 54.597501 
+##  6.349523 47.962605 14.570052 54.729144 
 ## ###STACItemCollection
-## - matched feature(s): 4246
-## - features (4246 item(s) / 0 not fetched):
+## - matched feature(s): 5582
+## - features (5582 item(s) / 0 not fetched):
+##   - S2B_32ULV_20180930_0_L2A
 ##   - S2B_32UME_20180930_0_L2A
 ##   - S2B_32UNF_20180930_0_L2A
-##   - S2B_32UMB_20180930_0_L2A
-##   - S2B_32UMD_20180930_0_L2A
-##   - S2B_32UNC_20180930_0_L2A
-##   - S2B_32UPF_20180930_0_L2A
-##   - S2B_32UMA_20180930_0_L2A
-##   - S2B_32UMC_20180930_0_L2A
-##   - S2B_32UNE_20180930_0_L2A
-##   - S2B_32UMV_20180930_0_L2A
-##   - ... with 4236 more feature(s).
+##   - S2B_32ULF_20180930_0_L2A
+##   - S2B_31UGQ_20180930_0_L2A
+##   - S2B_31UGU_20180930_0_L2A
+##   - S2B_31UGV_20180930_0_L2A
+##   - S2B_32ULA_20180930_0_L2A
+##   - S2B_31UGP_20180930_0_L2A
+##   - S2B_31UGR_20180930_0_L2A
+##   - ... with 5572 more feature(s).
 ## - assets: 
 ## overview, thumbnail, metadata, B11, B01, B12, B02, B03, B04, AOT, B05, B06, B07, B08, B8A, B09, WVP, visual, SCL, info
 ## - other field(s): 
@@ -315,31 +315,31 @@ div.csl-indent {
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>s2_collection <span class="ot">=</span> <span class="fu">image_collection</span>(<span class="st">"S2_de_2018.db"</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>s2_collection</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## Image collection object, referencing 1358 images with 5 bands
+<pre><code>## Image collection object, referencing 1719 images with 5 bands
 ## Images:
-##                       name      left      top   bottom     right
-## 1 S2B_32UMB_20180930_0_L2A  7.560563 51.45114 50.45528  8.908829
-## 2 S2B_32UMD_20180930_0_L2A  7.500956 53.24953 52.25346  9.146262
-## 3 S2B_32UNC_20180930_0_L2A  8.999721 52.35046 51.62562  9.383598
-## 4 S2B_32UPF_20180930_0_L2A 10.540773 55.03692 54.40879 10.913343
-## 5 S2B_32UMA_20180930_0_L2A  7.588101 50.55099 49.55650  8.451982
-## 6 S2B_32UMC_20180930_0_L2A  7.531544 52.35038 51.35444  9.143276
+##                       name     left      top   bottom    right
+## 1 S2B_32ULV_20180930_0_L2A 6.230946 49.64597 48.63304 7.763442
+## 2 S2B_31UGQ_20180930_0_L2A 5.714101 49.61960 48.58836 7.285031
+## 3 S2B_31UGU_20180930_0_L2A 5.927835 53.21198 52.17549 7.634167
+## 4 S2B_32ULA_20180930_0_L2A 6.178682 50.54532 49.53174 7.752769
+## 5 S2B_31UGP_20180930_0_L2A 5.667023 48.72092 47.69193 7.208270
+## 6 S2B_31UGR_20180930_0_L2A 5.763559 50.51810 49.48563 7.365728
 ##              datetime        srs
 ## 1 2018-09-30T10:44:11 EPSG:32632
-## 2 2018-09-30T10:44:11 EPSG:32632
-## 3 2018-09-30T10:44:11 EPSG:32632
+## 2 2018-09-30T10:44:11 EPSG:32631
+## 3 2018-09-30T10:44:11 EPSG:32631
 ## 4 2018-09-30T10:44:11 EPSG:32632
-## 5 2018-09-30T10:44:11 EPSG:32632
-## 6 2018-09-30T10:44:11 EPSG:32632
-## [ omitted 1352 images ] 
+## 5 2018-09-30T10:44:11 EPSG:32631
+## 6 2018-09-30T10:44:11 EPSG:32631
+## [ omitted 1713 images ] 
 ## 
 ## Bands:
 ##   name offset scale unit nodata image_count
-## 1  B02      0     1                    1358
-## 2  B03      0     1                    1358
-## 3  B04      0     1                    1358
-## 4  B08      0     1                    1358
-## 5  SCL      0     1                    1358</code></pre>
+## 1  B02      0     1                    1719
+## 2  B03      0     1                    1719
+## 3  B04      0     1                    1719
+## 4  B08      0     1                    1719
+## 5  SCL      0     1                    1719</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -358,7 +358,7 @@ div.csl-indent {
 ##                low             high  count pixel_size chunk_size
 ## t       2018-04-01       2018-10-02     37        P5D          1
 ## y 6055573.54251774 7370993.54251774 131542         10        768
-## x 827616.484143196  1686796.4841432  85918         10        768
+## x 630847.596478828 1686797.59647883 105595         10        768
 ## 
 ## Bands:
 ##   name offset scale nodata unit
@@ -374,56 +374,49 @@ div.csl-indent {
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(ndvi_obs)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ndvi_obs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## [1] 48
+<pre><code>## [1] 41
 ##    FID       time      NDVI
-## 1   59 2018-05-06 0.8400395
-## 2   11 2018-05-21 0.9251531
-## 3   40 2018-05-21 0.8567150
-## 4    6 2018-05-11 0.8954530
-## 5   49 2018-06-25 0.4926108
-## 6   45 2018-07-10 0.2454473
-## 7   61 2018-06-30 0.6845111
-## 8   10 2018-06-30 0.3199060
-## 9   72 2018-07-15 0.2299230
-## 10  55 2018-06-05 0.6982809
-## 11  26 2018-07-15 0.2339880
-## 12   1 2018-05-26 0.8159437
-## 13  86 2018-06-30 0.3837580
-## 14   5 2018-07-05 0.3259259
-## 15  95 2018-08-19 0.4900243
-## 16  75 2018-08-09 0.1328333
-## 17  28 2018-06-25 0.6762503
-## 18  24 2018-06-05 0.7050465
-## 19  50 2018-07-15 0.1948677
-## 20  90 2018-08-14 0.1112782
-## 21  47 2018-07-25 0.2321518
-## 22  69 2018-07-05 0.6953368
-## 23  33 2018-06-25 0.6020202
-## 24   7 2018-07-15 0.2767469
-## 25  63 2018-07-15 0.2311416
-## 26   3 2018-06-05 0.6657963
-## 27  12 2018-08-19 0.1945780
-## 28  48 2018-07-20 0.1244323
-## 29  21 2018-06-30 0.4771399
-## 30  25 2018-06-30 0.4945055
-## 31  58 2018-07-15 0.1320587
-## 32  38 2018-07-15 0.2028777
-## 33  35 2018-07-25 0.2218453
-## 34  85 2018-06-05 0.8156192
-## 35  89 2018-07-25 0.2615385
-## 36  94 2018-09-03 0.5734682
-## 37  97 2018-09-18 0.6500899
-## 38  34 2018-08-19 0.1534307
-## 39  83 2018-08-14 0.1389144
-## 40  84 2018-07-15 0.3922215
-## 41  23 2018-08-04 0.1628106
-## 42  98 2018-07-05 0.5445732
-## 43  37 2018-09-18 0.3810790
-## 44   4 2018-08-14 0.1573222
-## 45  73 2018-08-14 0.2551469
-## 46  39 2018-07-30 0.1279373
-## 47  78 2018-07-15 0.2071611
-## 48  57 2018-08-14 0.1460849</code></pre>
+## 1   57 2018-05-01 0.8804501
+## 2   30 2018-05-06 0.8050663
+## 3   35 2018-06-05 0.7198088
+## 4   85 2018-06-05 0.8537557
+## 5    1 2018-05-21 0.8391836
+## 6   62 2018-05-21 0.9128920
+## 7   98 2018-07-05 0.3368209
+## 8   52 2018-05-21 0.8626270
+## 9   58 2018-07-10 0.1909882
+## 10  40 2018-07-30 0.1408007
+## 11  12 2018-07-30 0.2224856
+## 12  73 2018-08-14 0.1351557
+## 13  43 2018-05-26 0.6305167
+## 14  34 2018-08-04 0.1770833
+## 15  20 2018-06-15 0.5195870
+## 16   7 2018-06-30 0.2899637
+## 17  54 2018-07-10 0.3022435
+## 18  91 2018-05-21 0.8774093
+## 19  94 2018-07-10 0.1689287
+## 20  86 2018-09-23 0.2425644
+## 21  22 2018-07-10 0.1695410
+## 22  21 2018-07-25 0.1729660
+## 23   3 2018-07-15 0.1894737
+## 24  55 2018-07-05 0.5551574
+## 25  38 2018-07-15 0.2028777
+## 26  16 2018-07-20 0.1965953
+## 27  60 2018-06-30 0.7829303
+## 28  88 2018-09-13 0.1201814
+## 29  53 2018-06-25 0.4928320
+## 30  61 2018-06-05 0.7470802
+## 31  37 2018-07-15 0.3542211
+## 32  13 2018-07-30 0.1968912
+## 33  83 2018-07-30 0.1500595
+## 34  45 2018-07-15 0.2294758
+## 35  72 2018-07-30 0.1219168
+## 36   9 2018-07-30 0.1710145
+## 37  33 2018-07-05 0.2437377
+## 38   2 2018-06-30 0.3162814
+## 39  26 2018-07-20 0.2150664
+## 40  19 2018-07-30 0.1512475
+## 41  92 2018-08-04 0.1296584</code></pre>
 </div>
 </div>
 <p><code>extract_geom()</code> drops any pixels with missing values only. Hence, if a feature is outside the extent of the data cube, or all pixels of a feature are NA due to clouds or unavailability of images, these pixels will not be included in the result. In contrast, if the input features contain overlapping geometries, pixels may be included several times (with different values in the FID column).</p>
@@ -441,23 +434,23 @@ div.csl-indent {
 <p><img src="ex03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## Simple feature collection with 48 features and 5 fields
+<pre><code>## Simple feature collection with 41 features and 5 fields
 ## Geometry type: POINT
 ## Dimension:     XY
-## Bounding box:  xmin: 7.911385 ymin: 48.00758 xmax: 14.90914 ymax: 54.5975
+## Bounding box:  xmin: 7.211101 ymin: 47.96261 xmax: 13.69784 ymax: 54.24233
 ## Geodetic CRS:  WGS 84
 ## First 10 features:
 ##    FID LC1          t       time      NDVI                  geometry
-## 1    1 B11 2018-05-28 2018-05-26 0.8159437 POINT (14.90914 51.17738)
-## 2   10 B11 2018-07-04 2018-06-30 0.3199060 POINT (8.423892 52.51083)
-## 3   11 B11 2018-05-24 2018-05-21 0.9251531 POINT (10.41534 54.37171)
-## 4   12 B11 2018-08-23 2018-08-19 0.1945780 POINT (11.31585 52.67577)
-## 5   21 B11 2018-07-04 2018-06-30 0.4771399 POINT (12.65786 54.30789)
-## 6   23 B11 2018-08-04 2018-08-04 0.1628106 POINT (8.833251 51.50885)
-## 7   24 B11 2018-06-08 2018-06-05 0.7050465  POINT (10.76221 53.1479)
-## 8   25 B11 2018-07-02 2018-06-30 0.4945055 POINT (11.37654 53.66373)
-## 9   26 B11 2018-07-19 2018-07-15 0.2339880 POINT (10.74198 51.96172)
-## 10  28 B11 2018-06-28 2018-06-25 0.6762503 POINT (9.173378 51.81735)</code></pre>
+## 1    1 B11 2018-05-25 2018-05-21 0.8391836  POINT (11.0275 54.24233)
+## 2   12 B11 2018-08-03 2018-07-30 0.2224856 POINT (10.91728 51.99644)
+## 3   13 B11 2018-07-30 2018-07-30 0.1968912 POINT (10.86522 53.81222)
+## 4   16 B11 2018-07-24 2018-07-20 0.1965953 POINT (9.115374 51.81693)
+## 5   19 B11 2018-07-30 2018-07-30 0.1512475 POINT (12.64639 53.64279)
+## 6    2 B11 2018-07-03 2018-06-30 0.3162814 POINT (13.29432 53.41114)
+## 7   20 B11 2018-06-16 2018-06-15 0.5195870 POINT (12.72851 49.16188)
+## 8   21 B11 2018-07-29 2018-07-25 0.1729660 POINT (12.39406 51.83186)
+## 9   22 B11 2018-07-10 2018-07-10 0.1695410 POINT (11.04414 51.18639)
+## 10  26 B11 2018-07-23 2018-07-20 0.2150664 POINT (11.24503 52.26309)</code></pre>
 </div>
 </div>
 </section>
@@ -473,13 +466,13 @@ div.csl-indent {
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-04-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="ex03_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>## [1] 1425</code></pre>
+<pre><code>## [1] 1468</code></pre>
 </div>
 </div>
 
@@ -805,7 +798,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb17-177"><a href="#cb17-177" aria-hidden="true" tabindex="-1"></a>wheat_timeseries <span class="sc">|&gt;</span></span>
 <span id="cb17-178"><a href="#cb17-178" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.Date</span>(time), <span class="at">y =</span> NDVI, <span class="at">color =</span> <span class="fu">factor</span>(FID))) <span class="sc">+</span></span>
 <span id="cb17-179"><a href="#cb17-179" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
-<span id="cb17-180"><a href="#cb17-180" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-05-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
+<span id="cb17-180"><a href="#cb17-180" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="fu">as.Date</span>(<span class="st">"2018-04-01"</span>),<span class="fu">as.Date</span>(<span class="st">"2018-09-30"</span>))) <span class="sc">+</span> </span>
 <span id="cb17-181"><a href="#cb17-181" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"NDVI"</span>) </span>
 <span id="cb17-182"><a href="#cb17-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb17-183"><a href="#cb17-183" aria-hidden="true" tabindex="-1"></a></span>
