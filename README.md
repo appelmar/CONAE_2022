@@ -17,7 +17,7 @@ This tutorial demonstrates how to access and process satellite image collections
     4.  R ecosystem for analyzing satellite imagery
     5.  The gdalcubes R package
 2.  Hands-on examples
-    1.  Image compositing
-    2.  Time series analysis
-    3.  Extraction
+    1. Computing cloud-free mosaic images from Sentinel-2 images
+    2. Time series analysis (trend, changes) using MODIS image time series
+    3. Extraction of training data for ML applications from Sentinel-2 images
 3.  Discussion

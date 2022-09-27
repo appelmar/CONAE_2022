@@ -18,7 +18,7 @@
     "href": "index.html#contents",
     "title": "Analyzing satellite image collections on public cloud platforms with R",
     "section": "Contents",
-    "text": "Contents\n\nIntroduction\n\nThe cloud\nSatellite imagery on cloud platforms\nCloud-native technologies: STAC, COGs, data cubes\nR ecosystem for analyzing satellite imagery\nThe gdalcubes R package\n\nHands-on examples\n\nImage compositing\nTime series analysis\nExtraction\n\nDiscussion"
+    "text": "Contents\n\nIntroduction\n\nThe cloud\nSatellite imagery on cloud platforms\nCloud-native technologies: STAC, COGs, data cubes\nR ecosystem for analyzing satellite imagery\nThe gdalcubes R package\n\nHands-on examples\n\nComputing cloud-free mosaic images from Sentinel-2 images\nTime series analysis (trend, changes) using MODIS image time series\nExtraction of training data for ML applications from Sentinel-2 images\n\nDiscussion"
   },
   {
     "objectID": "slides.html#motivation",
@@ -67,7 +67,7 @@
     "href": "slides.html#example-platforms-and-available-data",
     "title": "Analyzing satellite image collections on public cloud platforms with R",
     "section": "Example platforms and available data",
-    "text": "Example platforms and available data\n\n\n\n\nProvider\nData\n\n\n\n\nAmazon web services (AWS)\nSentinel, Landsat, ERA 5, OSM, CMIP 6, and more, see here\n\n\nGoogle Cloud Platform\nLandsat, Sentinel, access to GEE data\n\n\nCopernicus DIASes\nSentinel + more (see here)\n\n\nMicrosoft Planetary Computer\nSentinel, Landsat, MODIS and more, see here"
+    "text": "Example platforms and available data\n\n\n\n\nProvider\nData\n\n\n\n\nAmazon web services (AWS)\nSentinel, Landsat, ERA 5, OSM, CMIP 6, and more, see here\n\n\nGoogle Cloud Platform\nLandsat, Sentinel, access to GEE data\n\n\nMicrosoft Planetary Computer\nSentinel, Landsat, MODIS and more, see here"
   },
   {
     "objectID": "slides.html#object-storage-s3",
@@ -130,7 +130,7 @@
     "href": "slides.html#what-is-a-data-cube",
     "title": "Analyzing satellite image collections on public cloud platforms with R",
     "section": "What is a data cube?",
-    "text": "What is a data cube?\nHere: A four-dimensional (space, time, variable / band) regular raster data cube\n\n\ncollect all observations in one object\n\\(b \\times t \\times y \\times x \\rightarrow\\) real value\nsingle CRS, cells have constant temporal duration, and spatial size"
+    "text": "What is a data cube?\nHere: A four-dimensional (space, time, variable / band) regular raster data cube\n\n\ncollect all observations in one object\n\\(b \\times t \\times y \\times x \\rightarrow\\) number\nsingle CRS, cells have constant temporal duration, and spatial size"
   },
   {
     "objectID": "slides.html#data-cube-creation-is-lossy",

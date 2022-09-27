@@ -162,7 +162,6 @@ _Notice that security considerations (e.g. by using IAM roles, multi-factor auth
 |:--------|:------------------------------|
 | Amazon web services (AWS) | Sentinel, Landsat, ERA 5, OSM, CMIP 6, and more, see [here](https://registry.opendata.aws/?search=tags:gis,earth%20observation,events,mapping,meteorological,environmental,transportation) |
 | Google Cloud Platform | Landsat, Sentinel, [access to GEE data](https://developers.google.com/earth-engine/cloud/earthengine_cloud_project_setup) |
-| Copernicus DIASes | Sentinel + more (see [here](https://earsc.org/dias-comparison/)) |
 | Microsoft Planetary Computer | Sentinel, Landsat, MODIS and more, see [here](https://planetarycomputer.microsoft.com/catalog) |
 
 
@@ -340,7 +339,7 @@ Here: **A four-dimensional (space, time, variable / band) regular raster data cu
 ![](img/cube.png)
 
 - collect all observations in one object
-- $b \times t \times y \times x \rightarrow$ real value
+- $b \times t \times y \times x \rightarrow$ number
 - single CRS, cells have constant temporal duration, and spatial size
 
 
